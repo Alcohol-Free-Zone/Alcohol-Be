@@ -1,10 +1,10 @@
-package com.example.alcoholbe;
+package com.alcohol;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class AlcoholBeApplicationTests {
+class AlcoholApplicationTests {
 
     @Test
     void contextLoads() {
