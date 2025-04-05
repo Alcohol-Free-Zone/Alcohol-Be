@@ -7,7 +7,9 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -51,6 +53,20 @@ public class JWTUtil {
             log.error("Invalid JWT token: {}", e.getMessage());
             return false;
         }
+    }
+
+    // JWT에서 사용자 ID 추출
+    public String getUserIdFromToken(String token) {
+        JwtParser parser = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build();
+
+        Claims claims = parser
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("userId", String.class);
+
     }
 
 
