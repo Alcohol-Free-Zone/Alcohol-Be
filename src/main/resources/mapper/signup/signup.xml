@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.alcohol.Dao.signup.SignUpDao">
+
+    <insert id="signup" parameterType="com.alcohol.entity.UserAccount">
+        INSERT INTO user_account (
+                      id
+                    , password
+                    )
+        VALUES (
+                      #{id}
+                    , #{password}
+                )
+    </insert>
+
+</mapper>
