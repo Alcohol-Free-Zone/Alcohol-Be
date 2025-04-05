@@ -17,20 +17,20 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class JWTUtil {
     private final SecretKey secretKey;
+    private final int expDate;
 
-    public JWTUtil(@Value("${spring.jwt.secret}") String key, int expDate) {
+    public JWTUtil(@Value("${spring.jwt.secret}") String key, @Value("${spring.jwt.token-validity-one-min}") int expDate) {
         this.secretKey = Keys.hmacShaKeyFor(key.getBytes());
         this.expDate = expDate;
     }
 
     /*
-     * 
+     *
      * 현재 ACCESS 는 1분으로 설정 추후 30일 이후 세팅 필요
-     * 
+     *
     */
-    @Value("${spring.jwt.token-validity-one-min}")
-    private final int expDate;
-    
+
+
     // ACCESS TOKEN 생성
     public String createJwt(String userId, String role) {
         return Jwts.builder()
