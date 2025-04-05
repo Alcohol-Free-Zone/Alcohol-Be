@@ -53,9 +53,7 @@ springdoc:
 ---
 
 mybatis:
-  config-location: classpath:/mybatis/mybatis-config.xml
-  configuration:
-    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  mapper-locations: classpath:/mapper/**/*.xml
 
 spring:
   config:
@@ -94,3 +92,6 @@ path:
 server:
   port: 8080
 
+logging:
+  level:
+    org.springframework.web.servlet: debug
