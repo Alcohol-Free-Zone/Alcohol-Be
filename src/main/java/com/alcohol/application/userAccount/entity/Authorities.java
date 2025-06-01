@@ -1,5 +1,4 @@
-package com.alcohol.entity;
-import com.alcohol.Enum.Role;
+package com.alcohol.application.userAccount.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

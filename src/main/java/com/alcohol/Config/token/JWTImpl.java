@@ -1,4 +1,4 @@
-package com.alcohol.Util;
+package com.alcohol.Config.token;
 
 import java.util.Date;
 
@@ -17,11 +17,11 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
-public class JWTUtil {
+public class JWTImpl {
     private final SecretKey secretKey;
     private final int expDate;
 
-    public JWTUtil(@Value("${spring.jwt.secret}") String key, @Value("${spring.jwt.token-validity-one-min}") int expDate) {
+    public JWTImpl(@Value("${spring.jwt.secret}") String key, @Value("${spring.jwt.token-validity-one-min}") int expDate) {
         this.secretKey = Keys.hmacShaKeyFor(key.getBytes());
         this.expDate = expDate;
     }

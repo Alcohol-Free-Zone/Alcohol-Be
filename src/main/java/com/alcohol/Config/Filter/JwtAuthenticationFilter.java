@@ -1,4 +1,4 @@
-package com.alcohol.Filter;
+package com.alcohol.Config.Filter;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -11,7 +11,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.alcohol.Util.JWTUtil;
+import com.alcohol.Config.token.JWTImpl;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JWTUtil jWTUtil;
+    private final JWTImpl jWTUtil;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
