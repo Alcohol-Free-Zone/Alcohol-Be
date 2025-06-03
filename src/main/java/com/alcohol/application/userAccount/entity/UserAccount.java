@@ -26,8 +26,23 @@ public class UserAccount {
     private String nickname;
     private String profileImage;
 
+    @Column(nullable = false)
+    private Boolean isActive = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.USER;
+
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    // 소셜 로그인 정보 업데이트
+    public UserAccount updateInfo(String nickname, String profileImage) {
+        this.nickname = nickname;
+        this.profileImage = profileImage;
+        return this;
+    }
 
 
 
