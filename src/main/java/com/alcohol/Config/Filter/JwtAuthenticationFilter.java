@@ -1,9 +1,12 @@
 package com.alcohol.Config.Filter;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,10 +33,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = getTokenFromRequest(request); 
         
         //JWT 검증 및 사용자 정보 확인
-        if (StringUtils.hasText(token) && jWTUtil.validateToken(token)) {
+        if (StringUtils.hasText(token) && jWTUtil.validateToken(token) && !jWTUtil.isTokenExpired(token)) {
+            // 토큰에서 사용자 정보 추출
             String userId = jWTUtil.getUserIdFromToken(token);
-            UserDetails userDetails = new User(userId, "", Collections.emptyList()); //Spring Security User 객체 생성
-            UsernamePasswordAuthenticationToken authentication =new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()); //인증 객체 생성 및 SecurityContext에 저장
+            String role = jWTUtil.getRoleFromToken(token);
+            String provider = jWTUtil.getProviderFromToken(token);
+            // 권한 객체 생성
+            Collection<GrantedAuthority> authorities = Collections.singletonList(
+                    new SimpleGrantedAuthority(role)
+            );
+            // Spring Security 기본 User 객체 사용
+            UserDetails userDetails = User.builder()
+                    .username(userId)
+                    .password("") // OAuth 사용자는 패스워드 없음
+                    .authorities(authorities)
+                    .build();
+            UsernamePasswordAuthenticationToken authentication =new UsernamePasswordAuthenticationToken(userDetails, null, authorities); //인증 객체 생성 및 SecurityContext에 저장
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
