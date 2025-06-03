@@ -76,6 +76,16 @@ spring:
     secret: ${JWT_SECRET}
     token-validity-one-min: 60000
 
+oauth:
+  kakao:
+    rest-api-key: ${KAKAO_REST_API_KEY}
+    client-secret: ${KAKAO_CLIENT_SECRET}
+    redirect-uri: ${KAKAO_REDIRECT_URI}
+  google:
+    client-id: ${GOOGLE_CLIENT_ID}
+    client-secret: ${GOOGLE_CLIENT_SECRET}
+    redirect-uri: ${GOOGLE_REDIRECT_URI}
+
 files:
   prefix : d:/upload
   imagePath: /images
