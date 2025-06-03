@@ -34,9 +34,11 @@ public class JWTImpl {
 
 
     // ACCESS TOKEN 생성
-    public String createJwt(String userId, String role) {
+    public String createJwt(String userId, String role, String providerId) {
         return Jwts.builder()
-                .setSubject(userId) 
+                .setSubject(userId)
+                .claim("role", role) // 권한
+                .claim("provider", providerId) // 로그인 방식만 (필요시)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expDate))
                 .signWith(secretKey, SignatureAlgorithm.HS256) 
@@ -69,6 +71,50 @@ public class JWTImpl {
 
     }
 
+    // JWT에서 역할 추출
+    public String getRoleFromToken(String token) {
+        JwtParser parser = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build();
 
-    
+        Claims claims = parser
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("role", String.class);
+    }
+
+    // JWT에서 프로바이더 추출
+    public String getProviderFromToken(String token) {
+        JwtParser parser = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build();
+
+        Claims claims = parser
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("provider", String.class);
+    }
+
+    // 토큰 만료 확인
+    public boolean isTokenExpired(String token) {
+        try {
+            JwtParser parser = Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build();
+
+            Claims claims = parser
+                    .parseClaimsJws(token)
+                    .getBody();
+
+            return claims.getExpiration().before(new Date());
+        } catch (JwtException e) {
+            return true;
+        }
+    }
+
+
+
+
 }
