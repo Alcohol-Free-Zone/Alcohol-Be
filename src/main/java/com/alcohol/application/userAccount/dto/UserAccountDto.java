@@ -5,8 +5,8 @@ import org.apache.ibatis.annotations.Mapper;
 import com.alcohol.application.userAccount.entity.UserAccount;
 
 @Mapper
-public interface UserAccountDto {
+public class UserAccountDto {
 
-    void signup(UserAccount userAccount);
+//    void signup(UserAccount userAccount);
     
 }
