@@ -61,8 +61,12 @@ public class OAuthServiceImpl implements OAuthService {
                 "kakao"
         );
 
+        // 리프레시 토큰 생성
+        String refreshToken = jwtImpl.createRefreshToken(userAccount.getId().toString());
+
         return TokenResponseDto.builder()
                 .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .userAccountResponseDto(UserAccountResponseDto.from(userAccount))
                 .build();
     }
@@ -87,8 +91,12 @@ public class OAuthServiceImpl implements OAuthService {
                 "google"
         );
 
+        // 리프레시 토큰 생성
+        String refreshToken = jwtImpl.createRefreshToken(userAccount.getId().toString());
+
         return TokenResponseDto.builder()
                 .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .userAccountResponseDto(UserAccountResponseDto.from(userAccount))
                 .build();
     }

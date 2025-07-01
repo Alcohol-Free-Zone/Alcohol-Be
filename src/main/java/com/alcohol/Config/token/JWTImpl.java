@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 public class JWTImpl {
     private final SecretKey secretKey;
     private final int expDate;
+    private static final long REFRESH_TOKEN_VALIDITY_MS = 14L * 24 * 60 * 60 * 1000;
 
     public JWTImpl(@Value("${spring.jwt.secret}") String key, @Value("${spring.jwt.token-validity-one-min}") int expDate) {
         this.secretKey = Keys.hmacShaKeyFor(key.getBytes());
@@ -45,6 +46,16 @@ public class JWTImpl {
                 .compact();
          
     }
+
+    public String createRefreshToken(String userId) {
+        return Jwts.builder()
+                .setSubject(userId)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_VALIDITY_MS))
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
 
     // 토큰 검증
     public boolean validateToken(String token) {
