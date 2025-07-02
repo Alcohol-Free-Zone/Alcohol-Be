@@ -106,11 +106,12 @@ public class OAuthServiceImpl implements OAuthService {
 
         return userAccountRepository
                 .findByProviderAndProviderId(provider, providerId)
-//                .map(existingUser -> {
-//                    // 기존 사용자 정보 업데이트
+                .map(existingUser -> {
+                    // 기존 사용자 정보 업데이트
 //                    existingUser.updateInfo(nickname, profileImage);
-//                    return userAccountRepository.save(existingUser);
-//                })
+                    existingUser.updateLastLoginAt();
+                    return userAccountRepository.save(existingUser);
+                })
                 .orElseGet(() -> {
                     // 신규 사용자 자동 생성
                     UserAccount newUser = UserAccount.builder()

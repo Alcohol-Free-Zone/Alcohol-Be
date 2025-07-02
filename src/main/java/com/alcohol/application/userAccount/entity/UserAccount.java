@@ -36,11 +36,18 @@ public class UserAccount {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime lastLoginAt;
 
     // 소셜 로그인 정보 업데이트
     public UserAccount updateInfo(String nickname, String profileImage) {
         this.nickname = nickname;
         this.profileImage = profileImage;
+        return this;
+    }
+
+    //마지막 로그인 시간 업데이트
+    public UserAccount updateLastLoginAt() {
+        this.lastLoginAt = LocalDateTime.now();
         return this;
     }
 
