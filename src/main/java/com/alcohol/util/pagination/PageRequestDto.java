@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 public class PageRequestDto {
     private int pageNo = 1;        
-    private int numOfRows = 20;       
+    private int numOfRows = 10;       
 
     public Pageable toPageable() {
         return PageRequest.of(pageNo, numOfRows);
