@@ -2,6 +2,7 @@ package com.alcohol.application.pet.entity;
 
 import java.util.Date;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -9,31 +10,40 @@ import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @Entity
 public class Pet {
     @Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-    
-    // 반려정보 이미지
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "pet_id")
+    private Long petId;
+
+    // 반려동물 이미지 URL (최대 1000자)
+    @Column(length = 1000)
     private String imgUrl;
 
-    // 반려동물 이름
+    // 반려동물 생일
     private Date birth;
 
-    // 반려동물 메모
+    // 반려동물 메모 (최대 50자)
+    @Column(length = 50)
     private String memo;
 
-    // 반려동물 이름
+    // 반려동물 이름 (최대 20자, NOT NULL)
+    @Column(length = 20, nullable = false)
     private String petName;
 
-    // 반려동물 종류
+    // 반려동물 종류 (최대 50자)
+    @Column(length = 50)
     private String breed;
 
-    // 반려동물 나이
+    // 반려동물 나이 
+    @Column(nullable = false)
     private int petAge;
+
 }

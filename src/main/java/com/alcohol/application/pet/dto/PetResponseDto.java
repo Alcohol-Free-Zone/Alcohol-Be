@@ -13,7 +13,7 @@ public class PetResponseDto {
 
     public static PetResponseDto from(Pet petList) {
         return PetResponseDto.builder()
-                .id(petList.getId())
+                .id(petList.getPetId())
                 .imgUrl(petList.getImgUrl())
                 .build();
     }
