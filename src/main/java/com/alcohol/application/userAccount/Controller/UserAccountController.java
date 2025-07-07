@@ -29,10 +29,7 @@ public class UserAccountController {
 
     // 현재 로그인한 사용자 정보 조회
     @GetMapping("/me")
-    public ResponseEntity<UserAccountResponseDto> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
-        String userId = userDetails.getUsername();
-        UserAccount userAccount = userAccountService.findById(Long.parseLong(userId));
-
+    public ResponseEntity<UserAccountResponseDto> getCurrentUser(@AuthenticationPrincipal UserAccount userAccount) {
         // Entity를 DTO로 변환
         UserAccountResponseDto response = UserAccountResponseDto.from(userAccount);
 

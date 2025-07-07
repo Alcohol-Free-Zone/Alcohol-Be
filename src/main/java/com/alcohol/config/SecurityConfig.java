@@ -38,8 +38,8 @@ public class SecurityConfig {
             .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
             //  인증 및 권한 설정
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/**").permitAll() // 경로 전부 허용
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+//                .requestMatchers("/**").permitAll() // 경로 전부 허용
+                .requestMatchers("/api/auth/**","/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated() 
             )
             // JWT 필터를 Spring Security 인증 필터 앞에 등록

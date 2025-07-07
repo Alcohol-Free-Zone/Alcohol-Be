@@ -5,6 +5,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import com.alcohol.application.userAccount.entity.UserAccount;
+import com.alcohol.application.userAccount.repository.UserAccountRepository;
+import com.alcohol.application.userAccount.service.UserAccountService;
 import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -14,6 +17,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -33,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JWTImpl jwtUtil;
+    private final UserAccountRepository userRepo;    // JPA 리포지토리
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
@@ -45,20 +50,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // 2) 서명·만료 검증
                 if (jwtUtil.validateToken(token) && !jwtUtil.isTokenExpired(token)) {
-                    // 3) subject(userId)·role 꺼내기
+                    // 3) s토큰에서 subject로 저장된 userId(Long)
                     String userId = jwtUtil.getUserIdFromToken(token);
-                    String role = jwtUtil.getRoleFromToken(token);
 
-                    // 4) 권한 세팅
-                    var authorities = List.of(new SimpleGrantedAuthority(role));
-                    var auth = new UsernamePasswordAuthenticationToken(
-                            userId, null, authorities
+                    // 4) DB에서 UserAccount 엔티티 로드
+                    UserAccount userAccount = userRepo.findById(Long.valueOf(userId))
+                            .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+
+                    // 5) 권한 세팅
+                    var authorities = List.of(
+                            new SimpleGrantedAuthority(userAccount.getRole().name())
                     );
 
+                    // 6) principal에 UserAccount를 넣고 인증 설정
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(
+                                    userAccount,   // ← 여기!
+                                    null,
+                                    authorities
+                            );
+
                     auth.setDetails(
-                            new org.springframework.security.web.authentication
-                                    .WebAuthenticationDetailsSource()
-                                    .buildDetails(request)
+                            new WebAuthenticationDetailsSource().buildDetails(request)
                     );
 
                     // 5) 시큐리티 컨텍스트에 넣기
@@ -67,8 +81,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }catch (JwtException ex) {
                 // 토큰 파싱 에러 시 컨텍스트 초기화
-                logger.error("JWT error: {}",ex);
-                SecurityContextHolder.clearContext();
+                logger.error("JWT error",ex);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT");
+                return;
             }
         }
 
