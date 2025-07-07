@@ -21,6 +21,8 @@ public class PetAddRequest {
     
     private int petAge;
 
+    private int userId;
+
     // 성격 태그 여러 개
     private List<PersonalityTagType> tags;
 

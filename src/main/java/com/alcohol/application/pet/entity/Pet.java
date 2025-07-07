@@ -59,9 +59,10 @@ public class Pet {
 
     @OneToMany(mappedBy = "pet")
     private List<PetAnniversary> petAnniversaries = new ArrayList<>();
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserAccount userAccount;
+    
+    // 일단 주석
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "user_id", nullable = false)
+    // private UserAccount userAccount;
 
 }
