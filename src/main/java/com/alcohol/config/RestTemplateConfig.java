@@ -1,4 +1,4 @@
-package com.alcohol.Config;
+package com.alcohol.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

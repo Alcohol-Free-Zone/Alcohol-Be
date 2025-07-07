@@ -1,4 +1,4 @@
-package com.alcohol.Config.exception;
+package com.alcohol.config.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

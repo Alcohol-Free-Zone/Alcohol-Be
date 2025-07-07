@@ -1,4 +1,4 @@
-package com.alcohol.Config.token;
+package com.alcohol.config.token;
 
 import java.util.Date;
 
@@ -70,15 +70,14 @@ public class JWTImpl {
 
     // JWT에서 사용자 ID 추출
     public String getUserIdFromToken(String token) {
-        JwtParser parser = Jwts.parserBuilder()
+        Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
-                .build();
-
-        Claims claims = parser
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
 
-        return claims.get("userId", String.class);
+
+        return claims.getSubject();
 
     }
 

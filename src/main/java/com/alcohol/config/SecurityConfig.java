@@ -1,5 +1,6 @@
-package com.alcohol.Config;
+package com.alcohol.config;
 
+import com.alcohol.config.filter.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -9,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -18,25 +20,32 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            // CORS 설정 추가
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            //  CSRF 설정
+            .csrf(csrf -> csrf.disable())
+            //  H2 Console을 위한 헤더 설정
+            .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
             //  인증 및 권한 설정
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/**").permitAll() // 경로 전부 허용
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated() 
             )
+            // JWT 필터를 Spring Security 인증 필터 앞에 등록
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-            // CORS 설정 추가
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-            //  CSRF 설정
-            .csrf(csrf -> csrf.disable())
-
-            //  H2 Console을 위한 헤더 설정
-            .headers(headers -> headers
-            .frameOptions(frame -> frame.sameOrigin()));
 
         return http.build();
     }

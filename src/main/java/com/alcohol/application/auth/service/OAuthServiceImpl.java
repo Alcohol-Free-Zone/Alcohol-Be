@@ -7,7 +7,7 @@ import com.alcohol.application.userAccount.entity.Role;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.alcohol.Config.token.JWTImpl;
+import com.alcohol.config.token.JWTImpl;
 import com.alcohol.application.userAccount.entity.UserAccount;
 import com.alcohol.application.userAccount.repository.UserAccountRepository;
 import com.alcohol.application.userAccount.dto.UserAccountResponseDto;
