@@ -10,6 +10,7 @@ import lombok.Getter;
 
 @Getter
 public class PetAddRequest {
+    private int petId;
      // 기본 반려동물 정보
     private Date birth;
     

@@ -37,8 +37,20 @@ public class PetServiceImpl implements PetService {
 
     @Override
     public PetAddResponse addPet(PetAddRequest petRequest) {
-        // Pet 엔티티 생성
-        Pet pet = toEntity(petRequest);
+        Pet pet;
+
+        if (petRequest.getPetId() != 0) { 
+            // 수정 로직
+            pet = petRepository.findById((long) petRequest.getPetId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 Pet이 존재하지 않습니다."));
+
+            // 기존 pet 객체에 새 값 덮어쓰기
+            updateEntity(pet, petRequest);
+        } else {
+            // 신규 등록
+            pet = toEntity(petRequest);
+        }
+
         Pet savedPet = petRepository.save(pet);
 
         // PersonalityTag 저장
@@ -49,6 +61,15 @@ public class PetServiceImpl implements PetService {
 
         // Entity → Response 변환
         return toResponse(savedPet, petRequest.getTags(), petRequest.getAnniversary());
+    }
+
+    private void updateEntity(Pet pet, PetAddRequest petRequest) {
+        pet.setPetName(petRequest.getPetName());
+        pet.setBreed(petRequest.getBreed());
+        pet.setBirth(petRequest.getBirth());
+        pet.setMemo(petRequest.getMemo());
+        pet.setPetAge(petRequest.getPetAge());
+        
     }
 
     // DTO → Entity 변환 메서드
