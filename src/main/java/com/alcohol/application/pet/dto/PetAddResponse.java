@@ -32,6 +32,6 @@ public class PetAddResponse {
 
     private List<PersonalityTagType> tags;
 
-    private PetAnniversary anniversary;
+    private List<PetAnniversary> anniversary;
 
 }

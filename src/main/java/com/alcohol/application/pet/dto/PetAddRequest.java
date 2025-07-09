@@ -27,7 +27,7 @@ public class PetAddRequest {
     // 성격 태그 여러 개
     private List<PersonalityTagType> tags;
 
-    private PetAnniversary anniversary; // 반려동물 기념일 정보
+    private List<PetAnniversary> anniversaries; // 반려동물 기념일 정보
 
 
 }

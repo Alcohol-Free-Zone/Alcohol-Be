@@ -1,11 +1,11 @@
 package com.alcohol.application.Enum;
 
 public enum PersonalityTagType {
-    ACTIVE("#활동"),
-    GENTLE("#온순"),
-    CURIOUS("#호기심"),
-    LOYAL("#충성"),
-    PLAYFUL("#장난꾸러기");
+    활동("#활동"),
+    온순("#온순"),
+    호기심("#호기심"),
+    충성("#충성"),
+    장난꾸러기("#장난꾸러기");
 
     private String tag;
 

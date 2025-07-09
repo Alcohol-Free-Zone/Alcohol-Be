@@ -10,13 +10,16 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alcohol.application.Enum.PersonalityTagType;
 import com.alcohol.application.pet.dto.PetAddRequest;
 import com.alcohol.application.pet.dto.PetAddResponse;
+import com.alcohol.application.pet.dto.PetResponseDto;
 import com.alcohol.application.pet.entity.Pet;
 import com.alcohol.application.pet.entity.PetAnniversary;
 import com.alcohol.application.pet.entity.PetPersonalityTag;
 import com.alcohol.application.pet.repository.PetPersonalityTagRepository;
 import com.alcohol.application.pet.repository.PetRepository;
 import com.alcohol.application.pet.service.PetRepository.PetAnniversaryRepository;
+import com.alcohol.util.pagination.PageResponseDto;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,9 +33,26 @@ public class PetServiceImpl implements PetService {
     private final PetPersonalityTagRepository petPersonalityTagRepository;
     private final PetAnniversaryRepository petAnniversaryRepository;
 
-    @Override
-    public Page<Pet> findAll(Pageable pageable) {
-        return petRepository.findAll(pageable);
+    // @Override
+    // public Page<Pet> findAll(Pageable pageable) {
+    //     return petRepository.findAll(pageable);
+    // }
+
+    @Transactional(readOnly = true)
+    public PageResponseDto<PetResponseDto> getPetList(Pageable pageable) {
+        Page<Pet> petPage = petRepository.findAll(pageable);
+
+        List<PetResponseDto> content = petPage.getContent().stream()
+                .map(PetResponseDto::from)
+                .toList();
+
+        return new PageResponseDto<>(
+                content,
+                petPage.hasNext(),
+                petPage.getTotalElements(),
+                petPage.getNumber(),
+                petPage.getSize()
+        );
     }
 
     @Override
@@ -54,13 +74,15 @@ public class PetServiceImpl implements PetService {
         Pet savedPet = petRepository.save(pet);
 
         // PersonalityTag 저장
+        petPersonalityTagRepository.deleteByPet(pet);
         savePersonalityTags(petRequest.getTags(), savedPet);
 
         // Anniversary 저장
-        saveAnniversary(petRequest.getAnniversary(), savedPet);
+        petAnniversaryRepository.deleteByPet(pet);
+        saveAnniversary(petRequest.getAnniversaries(), savedPet);
 
         // Entity → Response 변환
-        return toResponse(savedPet, petRequest.getTags(), petRequest.getAnniversary());
+        return toResponse(savedPet, petRequest.getTags(), petRequest.getAnniversaries());
     }
 
     private void updateEntity(Pet pet, PetAddRequest petRequest) {
@@ -84,34 +106,37 @@ public class PetServiceImpl implements PetService {
     }
 
     // 태그 저장 메서드
-    private void savePersonalityTags(List<PersonalityTagType> tags, Pet pet) {
+    private void savePersonalityTags(List<PersonalityTagType> tags, Pet savedPet) {
         if (tags == null || tags.isEmpty()) {
             return;
         }
         for (PersonalityTagType tagType : tags) {
             PetPersonalityTag tagEntity = new PetPersonalityTag();
-            tagEntity.setPet(pet);
+            tagEntity.setPet(savedPet);
             tagEntity.setTag(tagType);
             petPersonalityTagRepository.save(tagEntity);
         }
     }
 
     // 기념일 저장 메서드
-    private void saveAnniversary(PetAnniversary anniversary, Pet savedPet) {
+    private void saveAnniversary(List<PetAnniversary> anniversary, Pet savedPet) {
         if (anniversary == null) {
             return;
         }
 
-        PetAnniversary petAnniversary = new PetAnniversary();
-        petAnniversary.setDate(anniversary.getDate());
-        petAnniversary.setTitle(anniversary.getTitle());
-        petAnniversaryRepository.save(petAnniversary);
+        for (PetAnniversary anniversaryUnit : anniversary) {
+            PetAnniversary petAnniversary = new PetAnniversary();
+            petAnniversary.setPet(savedPet);
+            petAnniversary.setDate(anniversaryUnit.getDate());
+            petAnniversary.setTitle(anniversaryUnit.getTitle());
+            petAnniversaryRepository.save(petAnniversary);
+        }
         
     }   
     
 
     // Entity → DTO 변환 메서드
-    private PetAddResponse toResponse(Pet pet, List<PersonalityTagType> tags, PetAnniversary petAnniversary) {
+    private PetAddResponse toResponse(Pet pet, List<PersonalityTagType> tags, List<PetAnniversary> petAnniversary) {
         return PetAddResponse.builder()
                 .petId(pet.getPetId())
                 .petName(pet.getPetName())
@@ -122,6 +147,14 @@ public class PetServiceImpl implements PetService {
                 .tags(tags)
                 .anniversary(petAnniversary)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void deletePet(Long petId) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 반려동물이 존재하지 않습니다. ID = " + petId));
+        petRepository.delete(pet);
     }
 
 }
