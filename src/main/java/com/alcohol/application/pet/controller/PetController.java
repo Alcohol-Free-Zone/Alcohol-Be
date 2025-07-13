@@ -3,6 +3,7 @@ package com.alcohol.application.pet.controller;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +16,7 @@ import com.alcohol.application.pet.dto.PetAddRequest;
 import com.alcohol.application.pet.dto.PetAddResponse;
 import com.alcohol.application.pet.dto.PetResponseDto;
 import com.alcohol.application.pet.service.PetService;
+import com.alcohol.application.userAccount.entity.UserAccount;
 import com.alcohol.util.pagination.PageRequestDto;
 import com.alcohol.util.pagination.PageResponseDto;
 
@@ -30,24 +32,30 @@ public class PetController {
     private final PetService petService;
 
     @GetMapping
-    public ResponseEntity<PageResponseDto<PetResponseDto>> getPetList(PageRequestDto pageRequestDto) {
+    public ResponseEntity<PageResponseDto<PetResponseDto>> getPetList(
+        PageRequestDto pageRequestDto,
+        @AuthenticationPrincipal UserAccount userAccount
+        ) {
         Pageable pageable = pageRequestDto.toPageable();
-        PageResponseDto<PetResponseDto> response = petService.getPetList(pageable);
+        Long userId = userAccount.getId();
+        PageResponseDto<PetResponseDto> response = petService.getPetList(userId, pageable);
 
         return ResponseEntity.ok(response);
     }
 
     @PostMapping
     public ResponseEntity<PetAddResponse> addPet(
-        @RequestBody PetAddRequest petRequest
+        @RequestBody PetAddRequest petRequest,
+        @AuthenticationPrincipal UserAccount userAccount
     ) {
-        PetAddResponse response = petService.addPet(petRequest);
+        PetAddResponse response = petService.addPet(petRequest, userAccount);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @DeleteMapping("/{petId}")
-    public ResponseEntity<Void> deletePet(@PathVariable Long petId) {
-        petService.deletePet(petId);
+    public ResponseEntity<Void> deletePet(@PathVariable Long petId,
+        @AuthenticationPrincipal UserAccount userAccount) {
+        petService.deletePet(petId, userAccount);
         return ResponseEntity.noContent().build();
     }
     

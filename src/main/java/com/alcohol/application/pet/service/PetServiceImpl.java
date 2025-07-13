@@ -17,6 +17,7 @@ import com.alcohol.application.pet.entity.PetPersonalityTag;
 import com.alcohol.application.pet.repository.PetPersonalityTagRepository;
 import com.alcohol.application.pet.repository.PetRepository;
 import com.alcohol.application.pet.service.PetRepository.PetAnniversaryRepository;
+import com.alcohol.application.userAccount.entity.UserAccount;
 import com.alcohol.util.pagination.PageResponseDto;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -39,8 +40,8 @@ public class PetServiceImpl implements PetService {
     // }
 
     @Transactional(readOnly = true)
-    public PageResponseDto<PetResponseDto> getPetList(Pageable pageable) {
-        Page<Pet> petPage = petRepository.findAll(pageable);
+    public PageResponseDto<PetResponseDto> getPetList(Long userId, Pageable pageable) {
+        Page<Pet> petPage = petRepository.findAllByUserAccount_Id(userId, pageable);
 
         List<PetResponseDto> content = petPage.getContent().stream()
                 .map(PetResponseDto::from)
@@ -56,19 +57,25 @@ public class PetServiceImpl implements PetService {
     }
 
     @Override
-    public PetAddResponse addPet(PetAddRequest petRequest) {
+    public PetAddResponse addPet(PetAddRequest petRequest, UserAccount userAccount) {
         Pet pet;
+
+        
 
         if (petRequest.getPetId() != 0) { 
             // 수정 로직
             pet = petRepository.findById((long) petRequest.getPetId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 Pet이 존재하지 않습니다."));
 
+            if (!pet.getUserAccount().getId().equals(userAccount.getId())) {
+                throw new SecurityException("해당 반려동물을 수정할 권한이 없습니다.");
+            }
+
             // 기존 pet 객체에 새 값 덮어쓰기
             updateEntity(pet, petRequest);
         } else {
             // 신규 등록
-            pet = toEntity(petRequest);
+            pet = toEntity(petRequest, userAccount);
         }
 
         Pet savedPet = petRepository.save(pet);
@@ -95,13 +102,14 @@ public class PetServiceImpl implements PetService {
     }
 
     // DTO → Entity 변환 메서드
-    private Pet toEntity(PetAddRequest request) {
+    private Pet toEntity(PetAddRequest request, UserAccount userAccount) {
         Pet pet = new Pet();
         pet.setPetName(request.getPetName());
         pet.setBreed(request.getBreed());
         pet.setPetAge(request.getPetAge());
         pet.setBirth(request.getBirth());
         pet.setMemo(request.getMemo());
+        pet.setUserAccount(userAccount);
         return pet;
     }
 
@@ -151,10 +159,14 @@ public class PetServiceImpl implements PetService {
 
     @Override
     @Transactional
-    public void deletePet(Long petId) {
+    public void deletePet(Long petId, UserAccount userAccount) {
         Pet pet = petRepository.findById(petId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 반려동물이 존재하지 않습니다. ID = " + petId));
         petRepository.delete(pet);
+
+        if (!pet.getUserAccount().getId().equals(userAccount.getId())) {
+        throw new SecurityException("해당 반려동물을 삭제할 권한이 없습니다.");
+        }
     }
 
 }

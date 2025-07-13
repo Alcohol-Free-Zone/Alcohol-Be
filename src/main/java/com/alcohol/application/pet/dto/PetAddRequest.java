@@ -7,8 +7,10 @@ import com.alcohol.application.Enum.PersonalityTagType;
 import com.alcohol.application.pet.entity.PetAnniversary;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class PetAddRequest {
     private int petId;
      // 기본 반려동물 정보
@@ -22,7 +24,7 @@ public class PetAddRequest {
     
     private int petAge;
 
-    private int userId;
+    private Long userId;
 
     // 성격 태그 여러 개
     private List<PersonalityTagType> tags;
