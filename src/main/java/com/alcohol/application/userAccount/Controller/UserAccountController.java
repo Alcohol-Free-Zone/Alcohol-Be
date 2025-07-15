@@ -17,19 +17,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/user")
 public class UserAccountController {
-
-//    @PostMapping("/signup")
-//    public ResponseEntity<String> signup(@RequestBody UserAccount userAccount) {
-//        signUpService.signup(userAccount);
-//        return ResponseEntity.status(HttpStatus.CREATED).body("회원가입 성공");
-//}
-
-//    private final UserAccountDto UserAccountDto;
     private final UserAccountService userAccountService;
 
-    // 현재 로그인한 사용자 정보 조회
-    @GetMapping("/me")
-    public ResponseEntity<UserAccountResponseDto> getCurrentUser(@AuthenticationPrincipal UserAccount userAccount) {
+    // 사용자 정보 조회
+    @GetMapping("/{id}")
+    public ResponseEntity<UserAccountResponseDto> getCurrentUser(
+            @AuthenticationPrincipal UserAccount currentUser,
+            @PathVariable("id") Long targetUserId) {
+
+        UserAccount userAccount = userAccountService.authFindById(currentUser, targetUserId);
         // Entity를 DTO로 변환
         UserAccountResponseDto response = UserAccountResponseDto.from(userAccount);
 
@@ -37,24 +33,24 @@ public class UserAccountController {
     }
 
     // 사용자 정보 수정
-    @PutMapping("/me")
+    @PutMapping("/{id}")
     public ResponseEntity<String> updateUser(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal UserAccount currentUser,
+            @PathVariable("id") Long targetUserId,
             @RequestBody UpdateUserRequestDto updateRequest) {
 
-        String userId = userDetails.getUsername();
-        userAccountService.updateUser(Long.parseLong(userId), updateRequest);
+        userAccountService.updateUser(currentUser, targetUserId, updateRequest);
 
         return ResponseEntity.ok("사용자 정보 수정 완료");
     }
 
     // 회원 탈퇴
-    @DeleteMapping("/me")
-    public ResponseEntity<String> deleteUser(@AuthenticationPrincipal UserDetails userDetails) {
-        String userId = userDetails.getUsername();
-        userAccountService.deleteUser(Long.parseLong(userId));
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteUser(@AuthenticationPrincipal UserAccount currentUser , @PathVariable("id") Long targetUserId) {
 
-        return ResponseEntity.ok("계정 삭제 완료");
+        userAccountService.deleteUser(currentUser, targetUserId);
+
+        return ResponseEntity.ok("계정 비활성화 완료");
     }
 
 }

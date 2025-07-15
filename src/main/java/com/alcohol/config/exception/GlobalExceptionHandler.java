@@ -1,7 +1,9 @@
 package com.alcohol.config.exception;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -15,6 +17,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
         log.error("잘못된 요청: {}", e.getMessage());
         return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
+    // 권한 부족 예외 전용 핸들러 추가
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException e) {
+        log.warn("권한 부족: {}", e.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body("권한이 없습니다.");
     }
 
     @ExceptionHandler(Exception.class)

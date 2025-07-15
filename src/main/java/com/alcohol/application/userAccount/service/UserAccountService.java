@@ -11,20 +11,20 @@ public interface UserAccountService {
 
 
     // 사용자 조회
-    UserAccount findById(Long id);
+    UserAccount authFindById(UserAccount currentUser, Long targetUserId);
+
+    // 사용자 조회
+    UserAccount findById(Long targetUserId);
 
     // 사용자 존재 여부 확인
     boolean existsById(Long id);
 
-    // 소셜 로그인 사용자 조회 또는 생성
-    UserAccount findOrCreateOAuthUser(String provider, String providerId,
-                                      String email, String nickname, String profileImage);
 
     // 사용자 정보 업데이트
-    UserAccount updateUser(Long userId, UpdateUserRequestDto updateRequest);
+    UserAccount updateUser(UserAccount currentUser, Long targetUserId, UpdateUserRequestDto updateRequest);
 
     // 사용자 삭제
-    void deleteUser(Long userId);
+    void deleteUser(UserAccount currentUser, Long targetUserId);
 
     // 프로바이더별 사용자 조회
     List<UserAccount> findUsersByProvider(String provider);

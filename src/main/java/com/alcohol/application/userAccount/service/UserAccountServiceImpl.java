@@ -2,6 +2,7 @@ package com.alcohol.application.userAccount.service;
 
 import java.util.List;
 
+import com.alcohol.application.auth.service.PermissionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,12 +20,24 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 public class UserAccountServiceImpl implements UserAccountService {
 
+    private final PermissionService permissionService;
     private final UserAccountRepository userAccountRepository;
 
     @Override
-    public UserAccount findById(Long id) {
-        return userAccountRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + id));
+    public UserAccount authFindById(UserAccount currentUser, Long targetUserId) {
+
+        // 권한 체크
+        if (!permissionService.isOwnerOrAdmin(currentUser, targetUserId));
+
+        return userAccountRepository.findById(targetUserId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + targetUserId));
+    }
+
+    @Override
+    public UserAccount findById(Long targetUserId) {
+
+        return userAccountRepository.findById(targetUserId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + targetUserId));
     }
 
     @Override
@@ -32,53 +45,29 @@ public class UserAccountServiceImpl implements UserAccountService {
         return userAccountRepository.existsById(id);
     }
 
-    @Override
-    @Transactional
-    public UserAccount findOrCreateOAuthUser(String provider, String providerId,
-                                             String email, String nickname, String profileImage) {
-
-        return userAccountRepository
-                .findByProviderAndProviderId(provider, providerId)
-                .map(existingUser -> {
-                    // 기존 사용자 정보 업데이트
-                    existingUser.updateInfo(nickname, profileImage);
-                    log.info("기존 {} 사용자 정보 업데이트: {}", provider, email);
-                    return userAccountRepository.save(existingUser);
-                })
-                .orElseGet(() -> {
-                    // 신규 사용자 생성
-                    UserAccount newUser = UserAccount.builder()
-                            .provider(provider)
-                            .providerId(providerId)
-                            .email(email)
-                            .nickname(nickname)
-                            .profileImage(profileImage)
-                            .role(Role.USER)
-                            .build();
-
-                    log.info("새로운 {} 사용자 생성: {}", provider, email);
-                    return userAccountRepository.save(newUser);
-                });
-    }
 
     @Override
     @Transactional
-    public UserAccount updateUser(Long userId, UpdateUserRequestDto updateRequest) {
-        UserAccount userAccount = findById(userId);
+    public UserAccount updateUser(UserAccount currentUser, Long targetUserId, UpdateUserRequestDto updateRequest) {
 
-        userAccount.updateInfo(updateRequest.getNickname(), updateRequest.getProfileImage());
+        UserAccount userAccount = authFindById(currentUser, targetUserId);
 
-        log.info("사용자 정보 업데이트: {}", userId);
+        userAccount.updateInfo(updateRequest.getNickname(), updateRequest.getEmail(), updateRequest.getProfileImage());
+
+        log.info("사용자 정보 업데이트: {}", targetUserId);
         return userAccountRepository.save(userAccount);
     }
 
     @Override
     @Transactional
-    public void deleteUser(Long userId) {
-        UserAccount userAccount = findById(userId);
-        userAccountRepository.delete(userAccount);
+    public void deleteUser(UserAccount currentUser, Long targetUserId) {
 
-        log.info("사용자 삭제: {}", userId);
+        UserAccount userAccount = authFindById(currentUser, targetUserId);
+
+        userAccount.updateActive(false);
+
+
+        log.info("사용자 비활설화: {}", userAccount);
     }
 
     @Override
