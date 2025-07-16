@@ -32,4 +32,6 @@ public class PlanPet {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pet_id", nullable = false)
     private Pet pet;
+
+    private Long userId;  // userId 는 별도 추가
 }
