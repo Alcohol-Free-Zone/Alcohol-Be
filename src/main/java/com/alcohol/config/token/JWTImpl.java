@@ -24,7 +24,7 @@ public class JWTImpl {
 
     public JWTImpl(@Value("${spring.jwt.secret}") String key, @Value("${spring.jwt.token-validity-one-min}") int expDate) {
         this.secretKey = Keys.hmacShaKeyFor(key.getBytes());
-        this.expDate = expDate;
+        this.expDate = expDate * 30;
     }
 
     /*
