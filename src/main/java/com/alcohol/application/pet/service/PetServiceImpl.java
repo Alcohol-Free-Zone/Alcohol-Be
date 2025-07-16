@@ -2,6 +2,7 @@ package com.alcohol.application.pet.service;
 
 import java.util.List;
 
+import com.alcohol.util.pagination.PageRequestDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Transactional
 public class PetServiceImpl implements PetService {
-    
+
     private final PetRepository petRepository;
     private final PetPersonalityTagRepository petPersonalityTagRepository;
     private final PetAnniversaryRepository petAnniversaryRepository;
@@ -40,8 +41,17 @@ public class PetServiceImpl implements PetService {
     // }
 
     @Transactional(readOnly = true)
-    public PageResponseDto<PetResponseDto> getPetList(Long userId, Pageable pageable) {
-        Page<Pet> petPage = petRepository.findAllByUserAccount_Id(userId, pageable);
+    public PageResponseDto<PetResponseDto> getPetList(Long userId, PageRequestDto pageRequestDto) {
+        Pageable pageable = pageRequestDto.toPageable();
+        Page<Pet> petPage;
+        if (pageRequestDto.hasSearchText()) {
+            // 검색어가 있는 경우(본인이 소유하지 않은 모든 펫리스트)
+            petPage = petRepository.findAllByUserAccount_IdNotAndPetNameContainingIgnoreCase(
+                    userId, pageRequestDto.getSearchText(), pageable);
+        } else {
+            // 검색어가 없는 경우 전체 조회(본인인 소유한 펫리스트)
+            petPage = petRepository.findAllByUserAccount_Id(userId, pageable);
+        }
 
         List<PetResponseDto> content = petPage.getContent().stream()
                 .map(PetResponseDto::from)

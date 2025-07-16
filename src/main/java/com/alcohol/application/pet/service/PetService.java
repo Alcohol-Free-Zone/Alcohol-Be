@@ -1,5 +1,6 @@
 package com.alcohol.application.pet.service;
 
+import com.alcohol.util.pagination.PageRequestDto;
 import org.springframework.data.domain.Pageable;
 
 import com.alcohol.application.pet.dto.PetAddRequest;
@@ -13,7 +14,7 @@ public interface PetService {
 
     PetAddResponse addPet(PetAddRequest petRequest, UserAccount userAccount);
 
-    PageResponseDto<PetResponseDto> getPetList(Long userId, Pageable pageable);
+    PageResponseDto<PetResponseDto> getPetList(Long userId, PageRequestDto pageRequestDto);
 
     void deletePet(Long petId, UserAccount userAccount);
 }

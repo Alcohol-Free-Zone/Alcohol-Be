@@ -15,5 +15,9 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
     Optional<Pet> findById(Long petId);    
 
     Page<Pet> findAllByUserAccount_Id(Long userId, Pageable pageable);
+
+    // 검색 기능 추가된 메서드
+    Page<Pet> findAllByUserAccount_IdNotAndPetNameContainingIgnoreCase(
+            Long userId, String petName, Pageable pageable);
     
 }

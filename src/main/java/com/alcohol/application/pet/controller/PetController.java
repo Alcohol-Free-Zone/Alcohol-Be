@@ -36,9 +36,8 @@ public class PetController {
         PageRequestDto pageRequestDto,
         @AuthenticationPrincipal UserAccount userAccount
         ) {
-        Pageable pageable = pageRequestDto.toPageable();
         Long userId = userAccount.getId();
-        PageResponseDto<PetResponseDto> response = petService.getPetList(userId, pageable);
+        PageResponseDto<PetResponseDto> response = petService.getPetList(userId, pageRequestDto);
 
         return ResponseEntity.ok(response);
     }
