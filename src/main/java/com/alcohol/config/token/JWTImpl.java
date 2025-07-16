@@ -4,14 +4,10 @@ import java.util.Date;
 
 import javax.crypto.SecretKey;
 
+import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.JwtParser;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 
@@ -62,6 +58,8 @@ public class JWTImpl {
         try {
             Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
             return true;
+        } catch (ExpiredJwtException e) {
+            throw e;  // ExpiredJwtException은 다시 던짐
         } catch (JwtException | IllegalArgumentException e) {
             log.error("Invalid JWT token: {}", e.getMessage());
             return false;
@@ -119,6 +117,8 @@ public class JWTImpl {
                     .getBody();
 
             return claims.getExpiration().before(new Date());
+        } catch (ExpiredJwtException e) {
+            throw e;  // ExpiredJwtException은 다시 던짐
         } catch (JwtException e) {
             return true;
         }
