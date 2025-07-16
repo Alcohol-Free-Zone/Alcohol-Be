@@ -12,9 +12,9 @@ import com.alcohol.util.pagination.PageResponseDto;
 public interface PetService {
     // Page<Pet> findAll(Pageable pageable);
 
-    PetAddResponse addPet(PetAddRequest petRequest, UserAccount userAccount);
+    PetAddResponse addPet(PetAddRequest petRequest, UserAccount currentUser);
 
     PageResponseDto<PetResponseDto> getPetList(Long userId, PageRequestDto pageRequestDto);
 
-    void deletePet(Long petId, UserAccount userAccount);
+    void deletePet(Long petId, UserAccount currentUser);
 }

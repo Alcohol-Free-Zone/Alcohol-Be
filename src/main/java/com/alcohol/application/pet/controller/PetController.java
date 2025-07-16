@@ -34,9 +34,9 @@ public class PetController {
     @GetMapping
     public ResponseEntity<PageResponseDto<PetResponseDto>> getPetList(
         PageRequestDto pageRequestDto,
-        @AuthenticationPrincipal UserAccount userAccount
+        @AuthenticationPrincipal UserAccount currentUser
         ) {
-        Long userId = userAccount.getId();
+        Long userId = currentUser.getId();
         PageResponseDto<PetResponseDto> response = petService.getPetList(userId, pageRequestDto);
 
         return ResponseEntity.ok(response);
@@ -45,16 +45,16 @@ public class PetController {
     @PostMapping
     public ResponseEntity<PetAddResponse> addPet(
         @RequestBody PetAddRequest petRequest,
-        @AuthenticationPrincipal UserAccount userAccount
+        @AuthenticationPrincipal UserAccount currentUser
     ) {
-        PetAddResponse response = petService.addPet(petRequest, userAccount);
+        PetAddResponse response = petService.addPet(petRequest, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @DeleteMapping("/{petId}")
     public ResponseEntity<Void> deletePet(@PathVariable Long petId,
-        @AuthenticationPrincipal UserAccount userAccount) {
-        petService.deletePet(petId, userAccount);
+        @AuthenticationPrincipal UserAccount currentUser) {
+        petService.deletePet(petId, currentUser);
         return ResponseEntity.noContent().build();
     }
     

@@ -67,7 +67,7 @@ public class PetServiceImpl implements PetService {
     }
 
     @Override
-    public PetAddResponse addPet(PetAddRequest petRequest, UserAccount userAccount) {
+    public PetAddResponse addPet(PetAddRequest petRequest, UserAccount currentUser) {
         Pet pet;
 
         
@@ -77,7 +77,7 @@ public class PetServiceImpl implements PetService {
             pet = petRepository.findById((long) petRequest.getPetId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 Pet이 존재하지 않습니다."));
 
-            if (!pet.getUserAccount().getId().equals(userAccount.getId())) {
+            if (!pet.getUserAccount().getId().equals(currentUser.getId())) {
                 throw new SecurityException("해당 반려동물을 수정할 권한이 없습니다.");
             }
 
@@ -85,7 +85,7 @@ public class PetServiceImpl implements PetService {
             updateEntity(pet, petRequest);
         } else {
             // 신규 등록
-            pet = toEntity(petRequest, userAccount);
+            pet = toEntity(petRequest, currentUser);
         }
 
         Pet savedPet = petRepository.save(pet);
@@ -112,14 +112,14 @@ public class PetServiceImpl implements PetService {
     }
 
     // DTO → Entity 변환 메서드
-    private Pet toEntity(PetAddRequest request, UserAccount userAccount) {
+    private Pet toEntity(PetAddRequest request, UserAccount currentUser) {
         Pet pet = new Pet();
         pet.setPetName(request.getPetName());
         pet.setBreed(request.getBreed());
         pet.setPetAge(request.getPetAge());
         pet.setBirth(request.getBirth());
         pet.setMemo(request.getMemo());
-        pet.setUserAccount(userAccount);
+        pet.setUserAccount(currentUser);
         return pet;
     }
 
@@ -169,12 +169,12 @@ public class PetServiceImpl implements PetService {
 
     @Override
     @Transactional
-    public void deletePet(Long petId, UserAccount userAccount) {
+    public void deletePet(Long petId, UserAccount currentUser) {
         Pet pet = petRepository.findById(petId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 반려동물이 존재하지 않습니다. ID = " + petId));
         petRepository.delete(pet);
 
-        if (!pet.getUserAccount().getId().equals(userAccount.getId())) {
+        if (!pet.getUserAccount().getId().equals(currentUser.getId())) {
         throw new SecurityException("해당 반려동물을 삭제할 권한이 없습니다.");
         }
     }
