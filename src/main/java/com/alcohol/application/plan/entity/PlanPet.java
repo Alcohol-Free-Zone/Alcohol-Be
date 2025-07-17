@@ -25,13 +25,9 @@ public class PlanPet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long planPetId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "plan_id", nullable = false)
-    private Plan plan;
+    private Long planId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pet_id", nullable = false)
-    private Pet pet;
+    private Long petId;
 
     private Long userId;  // userId 는 별도 추가
 }

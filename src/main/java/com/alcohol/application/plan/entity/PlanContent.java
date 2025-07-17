@@ -26,8 +26,6 @@ public class PlanContent {
 
     private String contentId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "plan_id", nullable = false)
-    private Plan plan;
+    private Long planId;
 
 }
