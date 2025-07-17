@@ -8,8 +8,8 @@ import org.springframework.util.StringUtils;
 
 @Setter
 public class PageRequestDto {
-    private int pageNo = 0;
-    private int numOfRows = 10;
+    private int pageNo;
+    private int numOfRows;
 
     private String searchText = "";  // 검색어 추가
 
