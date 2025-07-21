@@ -1,6 +1,7 @@
 package com.alcohol.application.plan.entity;
 
 import com.alcohol.application.pet.entity.Pet;
+import com.alcohol.application.userAccount.entity.UserAccount;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -25,9 +26,13 @@ public class PlanPet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long planPetId;
 
-    private Long planId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "plan_id", nullable = false)
+    private Plan plan;
 
     private Long petId;
 
-    private Long userId;  // userId 는 별도 추가
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserAccount user;
 }
