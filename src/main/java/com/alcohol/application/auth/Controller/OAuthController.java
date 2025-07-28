@@ -1,16 +1,22 @@
 package com.alcohol.application.auth.Controller;
 
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import java.io.IOException;
+import java.util.Map;
 
-import com.alcohol.application.auth.service.OAuthService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.alcohol.application.auth.dto.OAuthLoginRequestDto;
 import com.alcohol.application.auth.dto.TokenResponseDto;
+import com.alcohol.application.auth.service.OAuthService;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-
-import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -53,5 +59,12 @@ public class OAuthController {
     public ResponseEntity<String> logout(@RequestHeader("Authorization") String token) {
         oAuthService.logout(token.replace("Bearer ", ""));
         return ResponseEntity.ok("로그아웃 완료");
+    }
+
+    // Postman 전용 구글&카카오 계정 개발용 로그인
+    @PostMapping("/login")
+    public Map<String, Object> postmanLogin(@RequestBody Map<String, Long> request) {
+        Map<String, Object> response = oAuthService.postmanLogin(request.get("id"));
+        return response;
     }
 }

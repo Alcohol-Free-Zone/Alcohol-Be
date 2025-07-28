@@ -1,16 +1,17 @@
 package com.alcohol.application.auth.service;
 
+import java.util.HashMap;
 import java.util.Map;
 
-import com.alcohol.application.auth.dto.TokenResponseDto;
-import com.alcohol.application.userAccount.entity.Role;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.alcohol.config.token.JWTImpl;
+import com.alcohol.application.auth.dto.TokenResponseDto;
+import com.alcohol.application.userAccount.dto.UserAccountResponseDto;
+import com.alcohol.application.userAccount.entity.Role;
 import com.alcohol.application.userAccount.entity.UserAccount;
 import com.alcohol.application.userAccount.repository.UserAccountRepository;
-import com.alcohol.application.userAccount.dto.UserAccountResponseDto;
+import com.alcohol.config.token.JWTImpl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -132,5 +133,27 @@ public class OAuthServiceImpl implements OAuthService {
     public void logout(String token) {
         // 토큰 블랙리스트 처리 (선택사항)
         log.info("사용자 로그아웃 처리");
+    }
+
+    public Map<String, Object> postmanLogin(Long id) {
+        Map<String, Object> userToken = new HashMap<>();
+
+        UserAccount userAccount = findUserById(id);
+
+        // JWT 토큰 생성
+        String accessToken = jwtImpl.createJwt(
+                userAccount.getId().toString(),
+                userAccount.getRole().name(),
+                userAccount.getProvider()
+        );
+
+        userToken.put("accessToken", accessToken);
+        return userToken;
+    }
+
+    private UserAccount findUserById(Long id) {
+        return userAccountRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다. ID: " + id));
+        
     }
 }
