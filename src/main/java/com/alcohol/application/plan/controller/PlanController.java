@@ -33,6 +33,18 @@ public class PlanController {
         return ResponseEntity.ok(null);
     }
 
+    // 일정 초대하기
+    @PostMapping("/{id}/invite")
+    public ResponseEntity<?> inviteUserToPlan(@PathVariable Long id) {
+        return ResponseEntity.ok(null);
+    }
+
+    // 관심, 일정에 등록하기
+    @PostMapping("/{id}/interest")
+    public ResponseEntity<?> interestPlan(@PathVariable Long id) {
+        return ResponseEntity.ok(null);
+    }
+
     // 일정 삭제하기
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletePlan(@PathVariable Long id) {
