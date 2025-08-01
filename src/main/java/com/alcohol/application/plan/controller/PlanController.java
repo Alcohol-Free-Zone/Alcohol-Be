@@ -1,12 +1,20 @@
 package com.alcohol.application.plan.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.alcohol.application.plan.dto.PlanCreateUpdateResponse;
+import com.alcohol.application.plan.dto.PlanCreateUpdateRequest;
+import com.alcohol.application.plan.service.PlanService;
+import com.alcohol.application.userAccount.entity.UserAccount;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/plan")
 public class PlanController {
+
+    private final PlanService planService;
 
     // 유저 일정 리스트 조회
     @GetMapping
@@ -29,8 +39,18 @@ public class PlanController {
 
     // 일정 추가, 수정하기
     @PostMapping
-    public ResponseEntity<?> createOrUpdatePlan() {
-        return ResponseEntity.ok(null);
+    public ResponseEntity<PlanCreateUpdateResponse> createOrUpdatePlan(
+        @RequestBody PlanCreateUpdateRequest planCreateUpdateRequest,
+        @AuthenticationPrincipal UserAccount createUser) {
+        if (planCreateUpdateRequest.getPlanId() == null) {
+            // 신규 생성 로직
+            PlanCreateUpdateResponse created = planService.create(planCreateUpdateRequest, createUser);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } else {
+            // 수정 로직
+            PlanCreateUpdateResponse updated = planService.update(planCreateUpdateRequest, createUser);
+            return ResponseEntity.ok(updated);
+        }
     }
 
     // 일정 초대하기

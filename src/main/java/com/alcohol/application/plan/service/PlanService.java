@@ -1,15 +1,19 @@
 package com.alcohol.application.plan.service;
 
+import com.alcohol.application.plan.dto.PlanCreateUpdateResponse;
+import com.alcohol.application.plan.dto.PlanCreateUpdateRequest;
+import com.alcohol.application.userAccount.entity.UserAccount;
+
 public interface PlanService {
     /**
      * 계획 생성
      */
-    void createPlan(Long userId, String planDetails);
+    PlanCreateUpdateResponse create(PlanCreateUpdateRequest planCreateUpdateRequest, UserAccount createUser);
 
     /**
      * 계획 수정
      */
-    void updatePlan(Long planId, String newDetails);
+    PlanCreateUpdateResponse update(PlanCreateUpdateRequest planCreateUpdateRequest, UserAccount createUser);
 
     /**
      * 계획 삭제
