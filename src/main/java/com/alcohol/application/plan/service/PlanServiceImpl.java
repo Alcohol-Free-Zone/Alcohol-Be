@@ -9,6 +9,7 @@ import com.alcohol.application.pet.entity.Pet;
 import com.alcohol.application.pet.repository.PetRepository;
 import com.alcohol.application.plan.dto.PlanCreateUpdateRequest;
 import com.alcohol.application.plan.dto.PlanCreateUpdateResponse;
+import com.alcohol.application.plan.dto.PlanDto;
 import com.alcohol.application.plan.entity.Plan;
 import com.alcohol.application.plan.entity.PlanContent;
 import com.alcohol.application.plan.entity.PlanPet;
@@ -102,6 +103,13 @@ public class PlanServiceImpl implements PlanService {
     public void deletePlan(Long planId) {
         // 계획 삭제 로직 구현
         log.info("Plan {} deleted", planId);
+    }
+
+    public List<PlanDto> getPlansByUser(Long currentUser) {
+        List<Plan> planEntities = planRepository.findAllByCreateUserId_Id(currentUser);
+        return planEntities.stream()
+            .map(PlanDto::from)
+            .collect(Collectors.toList());
     }
 
     // @Override
