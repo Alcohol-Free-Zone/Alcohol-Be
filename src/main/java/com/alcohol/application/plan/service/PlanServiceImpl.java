@@ -12,9 +12,11 @@ import com.alcohol.application.plan.dto.PlanDto;
 import com.alcohol.application.plan.entity.Plan;
 import com.alcohol.application.plan.entity.PlanContent;
 import com.alcohol.application.plan.entity.PlanPet;
+import com.alcohol.application.plan.entity.PlanUser;
 import com.alcohol.application.plan.repository.PlanContentRepository;
 import com.alcohol.application.plan.repository.PlanPetRepository;
 import com.alcohol.application.plan.repository.PlanRepository;
+import com.alcohol.application.plan.repository.PlanUserRepository;
 import com.alcohol.application.userAccount.entity.UserAccount;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -31,8 +33,15 @@ public class PlanServiceImpl implements PlanService {
     private final PlanRepository planRepository;
     private final PlanPetRepository planPetRepository;
     private final PlanContentRepository planContentRepository;
+    private final PlanUserRepository planUserRepository;
 
     public PlanCreateUpdateResponse create(PlanCreateUpdateRequest planCreateUpdateRequest, UserAccount createUser) {
+
+        PlanUser planUser = PlanUser.builder()
+            .user(createUser)
+            .build();
+            
+        planUserRepository.save(planUser);
 
         Plan plan = Plan.builder()
             .planTitle(planCreateUpdateRequest.getPlanTitle())
@@ -119,5 +128,47 @@ public class PlanServiceImpl implements PlanService {
 
         return PlanDetailDto.from(plan, planPets, planContents);
     }
-    
+
+    public void addInterestPlace(Long planId, String contentId, Long userId) {
+        Plan plan = planRepository.findById(planId)
+            .orElseThrow(() -> new EntityNotFoundException("해당 일정이 존재하지 않습니다."));
+
+        boolean isParticipant = planUserRepository.existsByPlanAndUser_Id(plan, userId);
+        if (!isParticipant) {
+            throw new SecurityException("해당 일정에 참여한 사용자만 등록할 수 있습니다.");
+        }
+
+        boolean exists = planContentRepository.existsByPlanAndContentId(plan, contentId);
+        if (exists) {
+            throw new IllegalStateException("이미 등록된 관심 장소입니다.");
+        }
+
+        PlanContent interestPlace = PlanContent.builder()
+            .plan(plan)
+            .contentId(contentId)
+            .build();
+
+        planContentRepository.save(interestPlace);
+    }
+
+    public void deleteInterestPlace(Long planId, String contentId, Long userId) {
+        Plan plan = planRepository.findById(planId)
+            .orElseThrow(() -> new EntityNotFoundException("해당 일정이 존재하지 않습니다."));
+
+        boolean isParticipant = planUserRepository.existsByPlanAndUser_Id(plan, userId);
+        if (!isParticipant) {
+            throw new SecurityException("해당 일정에 참여한 사용자만 해제 할 수 있습니다.");
+        }
+
+        boolean exists = planContentRepository.existsByPlanAndContentId(plan, contentId);
+        if (!exists) {
+            throw new IllegalStateException("이미 등록된 관심 장소가 아닙니다.");
+        }
+
+        PlanContent interestPlace = planContentRepository
+            .findByPlanAndContentId(plan, contentId)
+            .orElseThrow(() -> new IllegalStateException("이미 등록된 관심 장소가 아닙니다."));
+
+        planContentRepository.delete(interestPlace);
+    }
 }

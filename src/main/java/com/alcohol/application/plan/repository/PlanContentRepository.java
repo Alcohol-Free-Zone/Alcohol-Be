@@ -1,6 +1,7 @@
 package com.alcohol.application.plan.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -13,5 +14,10 @@ public interface PlanContentRepository extends JpaRepository<PlanContent, Long> 
     // Define methods for PlanContent repository if needed
 
     List<PlanContent> findAllByPlan(Plan plan);
+
+    boolean existsByPlanAndContentId(Plan plan, String contentId);
+
+    Optional<PlanContent> findByPlanAndContentId(Plan plan, String contentId);
+
     
 }

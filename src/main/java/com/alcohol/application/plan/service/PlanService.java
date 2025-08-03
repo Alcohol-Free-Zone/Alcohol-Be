@@ -34,4 +34,14 @@ public interface PlanService {
      * 계획 상세 조회
      */
     PlanDetailDto getPlanDetailById(Long planId);
+
+    /**
+     * 현재 일정에 관심 장소 추가
+     */
+    void addInterestPlace(Long planId, String contentId, Long userId);
+
+    /**
+     * 현재 일정에 관심 장소 삭제
+     */    
+    void deleteInterestPlace(Long planId, String contentId, Long id);
 }
