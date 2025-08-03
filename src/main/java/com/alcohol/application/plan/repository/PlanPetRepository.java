@@ -1,5 +1,7 @@
 package com.alcohol.application.plan.repository;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.alcohol.application.plan.entity.Plan;
@@ -9,5 +11,7 @@ public interface PlanPetRepository extends JpaRepository<PlanPet, Long> {
 
     void deleteByPlan(Plan plan);
     // Define methods for PlanPet repository if needed
+
+    List<PlanPet> findAllByPlan(Plan plan);
     
 }

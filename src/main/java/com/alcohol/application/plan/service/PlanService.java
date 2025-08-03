@@ -1,6 +1,7 @@
 package com.alcohol.application.plan.service;
 
 import com.alcohol.application.plan.dto.PlanCreateUpdateResponse;
+import com.alcohol.application.plan.dto.PlanDetailDto;
 import com.alcohol.application.plan.dto.PlanDto;
 
 import java.util.List;
@@ -30,12 +31,7 @@ public interface PlanService {
     List<PlanDto> getPlansByUser(Long currentUser);
 
     /**
-     * 특정 사용자의 계획 조회
-     */
-    // List<PlanResponseDto> getPlansByUserId(Long userId);
-
-    /**
      * 계획 상세 조회
      */
-    // PlanResponseDto getPlanById(Long planId);
+    PlanDetailDto getPlanDetailById(Long planId);
 }

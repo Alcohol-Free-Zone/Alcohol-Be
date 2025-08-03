@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.alcohol.application.plan.dto.PlanCreateUpdateRequest;
 import com.alcohol.application.plan.dto.PlanCreateUpdateResponse;
+import com.alcohol.application.plan.dto.PlanDetailDto;
 import com.alcohol.application.plan.dto.PlanDto;
 import com.alcohol.application.plan.service.PlanService;
 import com.alcohol.application.userAccount.entity.UserAccount;
@@ -25,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/plan")
 public class PlanController {
-
     private final PlanService planService;
 
     // 유저 일정 리스트 조회
@@ -36,9 +36,10 @@ public class PlanController {
     }
 
     // 일정 상세조회
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getPlanById(@PathVariable Long id) {
-        return ResponseEntity.ok(null);
+    @GetMapping("/{planId}")
+    public ResponseEntity<PlanDetailDto> getPlanById(@PathVariable Long planId) {
+        PlanDetailDto planDetail = planService.getPlanDetailById(planId);
+        return ResponseEntity.ok(planDetail);
     }
 
     // 일정 추가, 수정하기

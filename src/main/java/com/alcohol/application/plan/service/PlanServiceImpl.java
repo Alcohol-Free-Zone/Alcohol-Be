@@ -5,10 +5,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.alcohol.application.pet.entity.Pet;
-import com.alcohol.application.pet.repository.PetRepository;
 import com.alcohol.application.plan.dto.PlanCreateUpdateRequest;
 import com.alcohol.application.plan.dto.PlanCreateUpdateResponse;
+import com.alcohol.application.plan.dto.PlanDetailDto;
 import com.alcohol.application.plan.dto.PlanDto;
 import com.alcohol.application.plan.entity.Plan;
 import com.alcohol.application.plan.entity.PlanContent;
@@ -32,7 +31,6 @@ public class PlanServiceImpl implements PlanService {
     private final PlanRepository planRepository;
     private final PlanPetRepository planPetRepository;
     private final PlanContentRepository planContentRepository;
-    private final PetRepository petRepository;
 
     public PlanCreateUpdateResponse create(PlanCreateUpdateRequest planCreateUpdateRequest, UserAccount createUser) {
 
@@ -111,14 +109,15 @@ public class PlanServiceImpl implements PlanService {
             .map(PlanDto::from)
             .collect(Collectors.toList());
     }
+    
+    public PlanDetailDto getPlanDetailById(Long planId) {
+        Plan plan = planRepository.findById(planId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 일정이 존재하지 않습니다."));
 
-    // @Override
-    // public List<PlanResponseDto> getPlansByUserId(Long userId) {
-    //     // 특정 사용자의 계획 조회 로직 구현
-    //     return Collections.emptyList(); // 예시로 빈 리스트 반환
-    // }
+        List<PlanPet> planPets = planPetRepository.findAllByPlan(plan);
+        List<PlanContent> planContents = planContentRepository.findAllByPlan(plan);
 
-    // @Override
-    // public PlanResponseDto getPlanById(Long planId
+        return PlanDetailDto.from(plan, planPets, planContents);
+    }
     
 }
