@@ -17,4 +17,6 @@ public interface PetService {
     PageResponseDto<PetResponseDto> getPetList(Long userId, PageRequestDto pageRequestDto);
 
     void deletePet(Long petId, UserAccount currentUser);
+
+    PetResponseDto getPet(Long petId);
 }

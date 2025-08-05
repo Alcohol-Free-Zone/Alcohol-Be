@@ -179,4 +179,10 @@ public class PetServiceImpl implements PetService {
         }
     }
 
+    public PetResponseDto getPet(Long petId) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 반려동물이 존재하지 않습니다. ID = " + petId));
+        return PetResponseDto.from(pet);
+    }
+
 }

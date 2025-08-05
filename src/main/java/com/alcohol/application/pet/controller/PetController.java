@@ -42,6 +42,14 @@ public class PetController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{petId}")
+    public ResponseEntity<PetResponseDto> getPet(
+        @PathVariable Long petId
+        ) {
+        PetResponseDto response = petService.getPet(petId);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping
     public ResponseEntity<PetAddResponse> addPet(
         @RequestBody PetAddRequest petRequest,
