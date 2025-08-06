@@ -4,6 +4,8 @@ import com.alcohol.application.pet.entity.Pet;
 import com.alcohol.application.pet.repository.PetRepository;
 import com.alcohol.application.petFollow.entity.PetFollow;
 import com.alcohol.application.petFollow.repository.PetFollowRepository;
+import com.alcohol.application.userAccount.entity.UserAccount;
+import com.alcohol.application.userAccount.repository.UserAccountRepository;
 import com.alcohol.util.pagination.PageResponseDto;
 import com.alcohol.application.pet.dto.PetResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +25,14 @@ public class PetFollowServiceImpl implements PetFollowService {
 
     private final PetFollowRepository petFollowRepository;
     private final PetRepository       petRepository;
+    private final UserAccountRepository userAccountRepository;
 
     @Override
     public void follow(Long followerId, Long petId) {
-        // 1. 펫 존재 확인
+        // 1. 사용자와 펫 엔터티 조회
+        UserAccount follower = userAccountRepository.findById(followerId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
         Pet pet = petRepository.findById(petId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 펫입니다."));
 
@@ -35,50 +41,58 @@ public class PetFollowServiceImpl implements PetFollowService {
             throw new IllegalArgumentException("본인 펫은 팔로우할 수 없습니다.");
         }
 
-        // 3. 이미 팔로우인지 검사
-        if (petFollowRepository.existsByFollowerIdAndPetId(followerId, petId)) {
+        // 3. 이미 팔로우인지 검사 (엔터티 기반 검색으로 변경)
+        if (petFollowRepository.existsByFollowerAndPet(follower, pet)) {
             throw new IllegalArgumentException("이미 팔로우 중입니다.");
         }
 
-        // 4. 저장
-        petFollowRepository.save(PetFollow.of(followerId, petId));
+        // 4. 저장 (엔터티 객체로 생성)
+        petFollowRepository.save(PetFollow.of(follower, pet));
         log.info("user {} → pet {} 팔로우", followerId, petId);
     }
 
     @Override
     public void unfollow(Long followerId, Long petId) {
-        if (!petFollowRepository.existsByFollowerIdAndPetId(followerId, petId)) {
+       // 사용자와 펫 엔터티 조회
+        UserAccount follower = userAccountRepository.findById(followerId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 펫입니다."));
+
+        if (!petFollowRepository.existsByFollowerAndPet(follower, pet)) {
             throw new IllegalArgumentException("팔로우 중이지 않습니다.");
         }
-        petFollowRepository.deleteByFollowerIdAndPetId(followerId, petId);
+        petFollowRepository.deleteByFollowerAndPet(follower, pet);
         log.info("user {} → pet {} 언팔로우", followerId, petId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public boolean isFollowing(Long followerId, Long petId) {
-        return petFollowRepository.existsByFollowerIdAndPetId(followerId, petId);
+        // 사용자와 펫 엔터티 조회
+        UserAccount follower = userAccountRepository.findById(followerId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 펫입니다."));
+
+        return petFollowRepository.existsByFollowerAndPet(follower, pet);
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponseDto<PetResponseDto> getMyFollowingPets(Long followerId, Pageable pageable) {
-        var followPage = petFollowRepository.findAllByFollowerId(followerId, pageable);
+        // 사용자 엔터티 조회
+        UserAccount follower = userAccountRepository.findById(followerId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        // 1) petId 모아서 한 번에 Pet 조회
-        List<Long> petIds = followPage.getContent()
-                .stream()
-                .map(PetFollow::getPetId)
-                .toList();
+        var followPage = petFollowRepository.findAllByFollower(follower, pageable);
 
-        Map<Long, Pet> petMap = petRepository.findAllById(petIds)
-                .stream()
-                .collect(Collectors.toMap(Pet::getPetId, p -> p));
-
-        // 2) DTO 변환
+        // Pet 엔터티에서 직접 접근 가능
         List<PetResponseDto> dtoList = followPage.getContent()
                 .stream()
-                .map(pf -> PetResponseDto.from(petMap.get(pf.getPetId())))
+                .map(pf -> PetResponseDto.from(pf.getPet())) // getPet()으로 직접 접근
                 .toList();
 
         return new PageResponseDto<>(
@@ -93,6 +107,9 @@ public class PetFollowServiceImpl implements PetFollowService {
     @Override
     @Transactional(readOnly = true)
     public long getFollowerCount(Long petId) {
-        return petFollowRepository.countByPetId(petId);
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 펫입니다."));
+
+        return petFollowRepository.countByPet(pet);
     }
 }
