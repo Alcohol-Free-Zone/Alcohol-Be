@@ -24,21 +24,24 @@ public class PetFollow {
     private Long id;
 
     // 팔로우 하는 사용자
-    @Column(name = "follower_id", nullable = false)
-    private Long followerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "followerId", nullable = false)
+    private UserAccount follower;
 
     // 팔로우 당하는 펫
-    @Column(name = "pet_id", nullable = false)
-    private Long petId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "petId", nullable = false)
+    private Pet pet;
+
 
     // 팔로우 날짜
     @Column(nullable = false)
     private LocalDateTime followedAt;
 
-    public static PetFollow of(Long followerId, Long petId) {
+    public static PetFollow of(UserAccount  follower, Pet pet) {
         return PetFollow.builder()
-                .followerId(followerId)
-                .petId(petId)
+                .follower(follower)
+                .pet(pet)
                 .followedAt(LocalDateTime.now())
                 .build();
     }
