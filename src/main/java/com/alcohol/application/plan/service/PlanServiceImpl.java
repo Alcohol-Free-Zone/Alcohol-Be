@@ -37,18 +37,19 @@ public class PlanServiceImpl implements PlanService {
 
     public PlanCreateUpdateResponse create(PlanCreateUpdateRequest planCreateUpdateRequest, UserAccount createUser) {
 
-        PlanUser planUser = PlanUser.builder()
-            .user(createUser)
-            .build();
-            
-        planUserRepository.save(planUser);
-
         Plan plan = Plan.builder()
             .planTitle(planCreateUpdateRequest.getPlanTitle())
             .createUserId(createUser)
             .build();
 
         Plan savedPlan = planRepository.save(plan);
+
+        PlanUser planUser = PlanUser.builder()
+            .user(createUser)
+            .plan(savedPlan)
+            .build();
+            
+        planUserRepository.save(planUser);
 
         for(Long petId : planCreateUpdateRequest.getPetIdList()){
             PlanPet planPet = PlanPet.builder()
@@ -113,15 +114,15 @@ public class PlanServiceImpl implements PlanService {
     }
 
     public List<PlanDto> getPlansByUser(Long currentUser) {
-        List<Plan> planEntities = planRepository.findAllByCreateUserId_Id(currentUser);
+        List<Plan> planEntities = planRepository.findAllByCreateUserId_IdAndIsActive(currentUser, "Y");
         return planEntities.stream()
             .map(PlanDto::from)
             .collect(Collectors.toList());
     }
     
     public PlanDetailDto getPlanDetailById(Long planId) {
-        Plan plan = planRepository.findById(planId)
-            .orElseThrow(() -> new IllegalArgumentException("해당 일정이 존재하지 않습니다."));
+        Plan plan = planRepository.findByPlanIdAndIsActive(planId, "Y")
+            .orElseThrow(() -> new IllegalArgumentException("해당 일정이 존재하지 않거나 비활성 상태입니다."));
 
         List<PlanPet> planPets = planPetRepository.findAllByPlan(plan);
         List<PlanContent> planContents = planContentRepository.findAllByPlan(plan);
@@ -170,5 +171,18 @@ public class PlanServiceImpl implements PlanService {
             .orElseThrow(() -> new IllegalStateException("이미 등록된 관심 장소가 아닙니다."));
 
         planContentRepository.delete(interestPlace);
+    }
+
+    public void deactivatePlan(Long id, Long userId) {
+        Plan plan = planRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("해당 일정이 존재하지 않습니다."));
+
+        boolean isParticipant = planUserRepository.existsByPlanAndUser_Id(plan, userId);
+        if (!isParticipant) {
+            throw new IllegalArgumentException("해당 일정에 참여한 사용자만 비활성화 할 수 있습니다.");
+        }
+
+        plan.setIsActive("N");
+        planRepository.save(plan);
     }
 }

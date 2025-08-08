@@ -18,12 +18,7 @@ public interface PlanService {
     /**
      * 계획 수정
      */
-    PlanCreateUpdateResponse update(PlanCreateUpdateRequest planCreateUpdateRequest, UserAccount createUser);
-
-    /**
-     * 계획 삭제
-     */
-    void deletePlan(Long planId);
+    PlanCreateUpdateResponse update(PlanCreateUpdateRequest planCreateUpdateRequest, UserAccount createUser);   
 
     /**
      * 계획 조회
@@ -44,4 +39,10 @@ public interface PlanService {
      * 현재 일정에 관심 장소 삭제
      */    
     void deleteInterestPlace(Long planId, String contentId, Long id);
+
+    /**
+     * 계획 비활성화
+     * @param long1 
+     */
+    void deactivatePlan(Long id, Long userId);
 }

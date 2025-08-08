@@ -1,18 +1,14 @@
 package com.alcohol.application.plan.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.alcohol.application.userAccount.entity.UserAccount;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,4 +36,7 @@ public class Plan {
     @JoinColumn(name = "user_id")
     private UserAccount createUserId;
 
+    @Column(nullable = false, length = 1)
+    @Builder.Default
+    private String isActive = "Y";
 }
