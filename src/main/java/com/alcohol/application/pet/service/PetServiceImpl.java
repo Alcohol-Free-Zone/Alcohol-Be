@@ -41,7 +41,7 @@ public class PetServiceImpl implements PetService {
     // }
 
     @Transactional(readOnly = true)
-    public PageResponseDto<PetResponseDto> getPetList(Long userId, PageRequestDto pageRequestDto) {
+    public PageResponseDto<PetResponseDto> getPetList(Long userId, PageRequestDto pageRequestDto, String petName) {
         Pageable pageable = pageRequestDto.toPageable();
         Page<Pet> petPage;
         if (pageRequestDto.hasSearchText()) {
@@ -50,7 +50,14 @@ public class PetServiceImpl implements PetService {
                     userId, pageRequestDto.getSearchText(), pageable);
         } else {
             // 검색어가 없는 경우 전체 조회(본인인 소유한 펫리스트)
-            petPage = petRepository.findAllByUserAccount_Id(userId, pageable);
+            if (petName != null && !petName.isBlank()) {
+            // petNameFilter가 있을 경우 LIKE 조건
+            petPage = petRepository.findAllByUserAccount_IdAndPetNameContainingIgnoreCase(
+                    userId, petName, pageable);
+            } else {
+                // petNameFilter가 없으면 전체 조회
+                petPage = petRepository.findAllByUserAccount_Id(userId, pageable);
+            }
         }
 
         List<PetResponseDto> content = petPage.getContent().stream()

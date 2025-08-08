@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alcohol.application.pet.dto.PetAddRequest;
@@ -34,11 +35,11 @@ public class PetController {
     @GetMapping
     public ResponseEntity<PageResponseDto<PetResponseDto>> getPetList(
         PageRequestDto pageRequestDto,
-        @AuthenticationPrincipal UserAccount currentUser
+        @AuthenticationPrincipal UserAccount currentUser,
+        @RequestParam(required = false) String petName
         ) {
         Long userId = currentUser.getId();
-        PageResponseDto<PetResponseDto> response = petService.getPetList(userId, pageRequestDto);
-
+        PageResponseDto<PetResponseDto> response = petService.getPetList(userId, pageRequestDto, petName);
         return ResponseEntity.ok(response);
     }
 
