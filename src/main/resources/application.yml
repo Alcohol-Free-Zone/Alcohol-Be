@@ -87,7 +87,7 @@ oauth:
     redirect-uri: ${GOOGLE_REDIRECT_URI}
 
 files:
-  prefix : d:/upload
+  prefix : c:/upload
   imagePath: /images
   filePath: /others
   viewPath: file:///D://upload//
