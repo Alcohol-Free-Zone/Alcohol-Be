@@ -1,7 +1,10 @@
 package com.alcohol.application.travel.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
+import com.alcohol.application.travel.dto.FavoriteCreateResponse;
 import com.alcohol.application.travel.dto.PostCreateRequest;
 import com.alcohol.application.travel.entitiy.Favorite;
 import com.alcohol.application.travel.entitiy.Post;
@@ -53,6 +56,17 @@ public class TravelServiceImpl implements TravelService {
         favorite.setUserId(userId);
         favoriteRepository.save(favorite);
         return favorite.getFavoriteId();
+    }
+
+    public List<FavoriteCreateResponse> getFavorites(Long id) {
+        List<Favorite> favorites = favoriteRepository.findByUserId(id);
+        return favorites.stream()
+                .map(favorite -> FavoriteCreateResponse.builder()
+                        .contentId(favorite.getContentId())
+                        .userId(favorite.getUserId())
+                        .favoriteId(favorite.getFavoriteId())
+                        .build())
+                .toList();
     }
 
     
