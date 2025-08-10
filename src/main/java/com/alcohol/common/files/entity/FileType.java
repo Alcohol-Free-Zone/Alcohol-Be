@@ -5,7 +5,8 @@ public enum FileType {
     PET_ALBUM("펫 앨범"),
     PET_PROFILE("펫 프로필 이미지"),
     POST_IMAGE("게시물 이미지"),
-    DOCUMENT("문서");
+    DOCUMENT("문서"), 
+    CUSTOM_ALBUM("커스텀 앨범");
 
     private final String description;
 
