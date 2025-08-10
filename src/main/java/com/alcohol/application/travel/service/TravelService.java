@@ -2,8 +2,12 @@ package com.alcohol.application.travel.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
+
 import com.alcohol.application.travel.dto.FavoriteCreateResponse;
 import com.alcohol.application.travel.dto.PostCreateRequest;
+import com.alcohol.application.travel.dto.ReviewListResponse;
+import com.alcohol.util.pagination.PageResponseDto;
 
 public interface TravelService {
 
@@ -12,5 +16,7 @@ public interface TravelService {
     Long createFavorite(String contentId, Long id);
 
     List<FavoriteCreateResponse> getFavorites(Long id);
+
+    PageResponseDto<ReviewListResponse> getPosts(Long userId, Pageable pageable);
 
 }

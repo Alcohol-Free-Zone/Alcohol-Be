@@ -1,15 +1,23 @@
 package com.alcohol.application.travel.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.alcohol.application.travel.dto.FavoriteCreateResponse;
 import com.alcohol.application.travel.dto.PostCreateRequest;
+import com.alcohol.application.travel.dto.ReviewListResponse;
 import com.alcohol.application.travel.entitiy.Favorite;
 import com.alcohol.application.travel.entitiy.Post;
 import com.alcohol.application.travel.repository.FavoriteRepository;
 import com.alcohol.application.travel.repository.TravelRepository;
+import com.alcohol.util.pagination.PageResponseDto;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -67,6 +75,28 @@ public class TravelServiceImpl implements TravelService {
                         .favoriteId(favorite.getFavoriteId())
                         .build())
                 .toList();
+    }
+
+    public PageResponseDto<ReviewListResponse> getPosts(Long userId, Pageable pageable) {
+
+        // 1. 로그인 유저의 친구 ID 리스트 조회
+        List<Long> friendIds = List.of(1L,2L,3L);
+
+        // 2. 본인 포함 친구 전체 리스트
+        List<Long> targetUserIds = new ArrayList<>(friendIds);
+        targetUserIds.add(userId);
+
+        // 3. 해당 사용자들(본인 + 친구들)의 리뷰 목록 페이징 조회
+        Page<Object[]> page = travelRepository.findReviewsWithLatestVisitUser(targetUserIds, pageable);
+
+        // 4. 페이지 결과를 DTO로 변환
+        List<ReviewListResponse> content = page.stream().map(record -> {
+            Post review = (Post) record[0];
+            String visitUserName = (String) record[1];
+            return new ReviewListResponse(review.getPostId(), review.getContentId(), visitUserName);
+        }).collect(Collectors.toList());
+
+        return new PageResponseDto<>(content, page.hasNext(), page.getTotalElements(), page.getNumber(), page.getSize());
     }
 
     
