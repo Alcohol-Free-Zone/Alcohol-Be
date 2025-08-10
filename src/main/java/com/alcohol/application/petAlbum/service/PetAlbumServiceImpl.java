@@ -2,9 +2,18 @@ package com.alcohol.application.petAlbum.service;
 
 import com.alcohol.application.pet.entity.Pet;
 import com.alcohol.application.pet.repository.PetRepository;
+import com.alcohol.application.petAlbum.dto.CustomAlbumCreateRequestDto;
+import com.alcohol.application.petAlbum.dto.CustomAlbumResponseDto;
 import com.alcohol.application.petAlbum.dto.PetAlbumResponseDto;
+import com.alcohol.application.petAlbum.entity.CustomAlbum;
+import com.alcohol.application.petAlbum.entity.CustomAlbumPhoto;
+import com.alcohol.application.petAlbum.repository.CustomAlbumPhotoRepository;
+import com.alcohol.application.petAlbum.repository.CustomAlbumRepository;
+import com.alcohol.application.userAccount.entity.UserAccount;
 import com.alcohol.common.files.dto.FileResponseDto;
+import com.alcohol.common.files.entity.File;
 import com.alcohol.common.files.entity.FileType;
+import com.alcohol.common.files.repository.FileRepository;
 import com.alcohol.common.files.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +33,9 @@ public class PetAlbumServiceImpl implements PetAlbumService {
 
     private final FileService fileService;
     private final PetRepository petRepository;
+    private final FileRepository fileRepository;
+    private CustomAlbumPhotoRepository customAlbumPhotoRepository;
+    private CustomAlbumRepository customAlbumRepository;
 
     @Override
     public List<FileResponseDto> uploadPhotos(Long petId, List<MultipartFile> files) {
@@ -124,5 +137,146 @@ public class PetAlbumServiceImpl implements PetAlbumService {
                 .totalPhotos(photos.size())
                 .totalFileSize(photos.stream().mapToLong(FileResponseDto::getFileSize).sum())
                 .build();
+    }
+
+
+    @Override
+    public CustomAlbumResponseDto createCustomAlbum(CustomAlbumCreateRequestDto dto, UserAccount creator) {
+        CustomAlbum album = CustomAlbum.builder()
+                .name(dto.getName())
+                .description(dto.getDescription())
+                .creator(creator)
+                .build();
+
+        CustomAlbum savedAlbum = customAlbumRepository.save(album);
+        log.info("커스텀 앨범 생성: albumId={}, creatorId={}", savedAlbum.getId(), creator.getId());
+
+        return CustomAlbumResponseDto.from(savedAlbum);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CustomAlbumResponseDto> getMyCustomAlbums(UserAccount user) {
+        List<CustomAlbum> albums = customAlbumRepository.findByCreatorOrderByCreatedAtDesc(user);
+        return albums.stream()
+                .map(CustomAlbumResponseDto::from)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CustomAlbumResponseDto getCustomAlbum(Long albumId) {
+        CustomAlbum album = customAlbumRepository.findByIdWithPhotos(albumId)
+                .orElseThrow(() -> new IllegalArgumentException("앨범을 찾을 수 없습니다."));
+
+        return CustomAlbumResponseDto.from(album);
+    }
+
+    @Override
+    public CustomAlbumResponseDto updateCustomAlbum(Long albumId, CustomAlbumCreateRequestDto dto, UserAccount user) {
+        return null;
+    }
+
+    @Override
+    public void deleteCustomAlbum(Long albumId, UserAccount user) {
+
+    }
+
+    @Override
+    public List<CustomAlbumResponseDto.CustomAlbumPhotoDto> addPhotosToCustomAlbum(
+            Long albumId, List<MultipartFile> files, List<Long> petIds,
+            List<String> captions, UserAccount user) {
+
+        // 앨범 존재 및 권한 확인
+        CustomAlbum album = customAlbumRepository.findById(albumId)
+                .orElseThrow(() -> new IllegalArgumentException("앨범을 찾을 수 없습니다."));
+
+        if (!album.getCreator().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("본인 앨범에만 사진을 추가할 수 있습니다.");
+        }
+
+        // 파일 개수와 펫 ID 개수 일치 확인
+        if (files.size() != petIds.size()) {
+            throw new IllegalArgumentException("파일 개수와 펫 ID 개수가 일치하지 않습니다.");
+        }
+
+        List<CustomAlbumResponseDto.CustomAlbumPhotoDto> result = new ArrayList<>();
+
+        for (int i = 0; i < files.size(); i++) {
+            MultipartFile file = files.get(i);
+            Long petId = petIds.get(i);
+            String caption = (captions != null && i < captions.size()) ? captions.get(i) : null;
+
+            // 펫 존재 확인
+            Pet pet = petRepository.findById(petId)
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 펫입니다: " + petId));
+
+            // 파일 업로드 (기존 FileService 활용)
+            FileResponseDto uploadedFile = fileService.uploadFile(file, FileType.PET_ALBUM, petId);
+
+            // File 엔터티 조회
+            File fileEntity = fileRepository.findById(uploadedFile.getId())
+                    .orElseThrow(() -> new RuntimeException("업로드된 파일을 찾을 수 없습니다."));
+
+            // CustomAlbumPhoto 생성
+            CustomAlbumPhoto albumPhoto = CustomAlbumPhoto.builder()
+                    .customAlbum(album)
+                    .pet(pet)
+                    .file(fileEntity)
+                    .caption(caption)
+                    .displayOrder(i)
+                    .build();
+
+            CustomAlbumPhoto savedPhoto = customAlbumPhotoRepository.save(albumPhoto);
+
+            CustomAlbumResponseDto.CustomAlbumPhotoDto photoDto =
+                    CustomAlbumResponseDto.CustomAlbumPhotoDto.builder()
+                            .id(savedPhoto.getId())
+                            .petId(pet.getPetId())
+                            .petName(pet.getPetName())
+                            .file(uploadedFile)
+                            .caption(caption)
+                            .displayOrder(i)
+                            .addedAt(savedPhoto.getAddedAt())
+                            .build();
+
+            result.add(photoDto);
+        }
+
+        log.info("커스텀 앨범 사진 추가: albumId={}, photoCount={}", albumId, files.size());
+        return result;
+    }
+
+    @Override
+    public void removePhotoFromCustomAlbum(Long albumId, Long photoId, UserAccount user) {
+        validateCustomAlbumOwner(albumId, user);
+
+        CustomAlbumPhoto photo = customAlbumPhotoRepository.findById(photoId)
+                .orElseThrow(() -> new IllegalArgumentException("사진을 찾을 수 없습니다."));
+
+        if (!photo.getCustomAlbum().getId().equals(albumId)) {
+            throw new IllegalArgumentException("해당 앨범의 사진이 아닙니다.");
+        }
+
+        // 매핑만 삭제 (원본 파일은 유지)
+        customAlbumPhotoRepository.delete(photo);
+        log.info("커스텀 앨범 사진 제거: albumId={}, photoId={}", albumId, photoId);
+    }
+
+    @Override
+    public void updatePhotoCaption(Long albumId, Long photoId, String caption, UserAccount user) {
+
+    }
+
+    @Override
+    public void updatePhotoOrder(Long albumId, List<Long> photoIds, UserAccount user) {
+
+    }
+
+    @Override
+    public void validateCustomAlbumOwner(Long albumId, UserAccount user) {
+        if (!customAlbumRepository.existsByIdAndCreator(albumId, user)) {
+            throw new IllegalArgumentException("본인 앨범만 관리할 수 있습니다.");
+        }
     }
 }
