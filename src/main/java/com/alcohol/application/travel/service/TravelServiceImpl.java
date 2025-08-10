@@ -3,7 +3,9 @@ package com.alcohol.application.travel.service;
 import org.springframework.stereotype.Service;
 
 import com.alcohol.application.travel.dto.PostCreateRequest;
+import com.alcohol.application.travel.entitiy.Favorite;
 import com.alcohol.application.travel.entitiy.Post;
+import com.alcohol.application.travel.repository.FavoriteRepository;
 import com.alcohol.application.travel.repository.TravelRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -18,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 public class TravelServiceImpl implements TravelService {
 
     private final TravelRepository travelRepository;
+    private final FavoriteRepository favoriteRepository;
 
     public void createPost(PostCreateRequest request, Long userId) {
         Post post;
@@ -42,6 +45,14 @@ public class TravelServiceImpl implements TravelService {
         }
 
         travelRepository.save(post); 
+    }
+
+    public Long createFavorite(String contentId, Long userId) {
+        Favorite favorite = new Favorite();
+        favorite.setContentId(contentId);
+        favorite.setUserId(userId);
+        favoriteRepository.save(favorite);
+        return favorite.getFavoriteId();
     }
 
     

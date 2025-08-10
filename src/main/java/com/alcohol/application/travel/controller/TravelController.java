@@ -1,19 +1,19 @@
 package com.alcohol.application.travel.controller;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alcohol.application.travel.dto.FavoriteCreateResponse;
 import com.alcohol.application.travel.dto.PostCreateRequest;
-import com.alcohol.application.travel.entitiy.Post;
 import com.alcohol.application.travel.service.TravelService;
 import com.alcohol.application.userAccount.entity.UserAccount;
 
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
@@ -23,8 +23,8 @@ public class TravelController {
 
     private final TravelService travelService;
 
-    @PostMapping("/post")
     // 게시글(리뷰) 생성/수정 임시 폼
+    @PostMapping("/post")
     public ResponseEntity<String> createPost(
         @RequestBody PostCreateRequest request,
         @AuthenticationPrincipal UserAccount currentUser
@@ -33,8 +33,23 @@ public class TravelController {
         travelService.createPost(request, currentUser.getId());
         return ResponseEntity.ok("게시물 생성/변경 완료");
     }
-    
 
+    // 관심목록 추가
+    @PostMapping("/favorite/{contentId}")
+    public ResponseEntity<FavoriteCreateResponse> createFavorite(
+        @PathVariable String contentId,
+        @AuthenticationPrincipal UserAccount currentUser
+    ) {
+        Long favoriteId = travelService.createFavorite(contentId, currentUser.getId());
+
+        FavoriteCreateResponse response = FavoriteCreateResponse.builder()
+            .contentId(contentId)
+            .userId(currentUser.getId())
+            .favoriteId(favoriteId)
+            .build();
+
+        return ResponseEntity.ok(response);
+    }
     
     
 }
