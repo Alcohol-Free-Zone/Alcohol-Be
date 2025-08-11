@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.alcohol.application.travel.dto.FavoriteCreateResponse;
@@ -77,27 +75,32 @@ public class TravelServiceImpl implements TravelService {
                 .toList();
     }
 
-    public PageResponseDto<ReviewListResponse> getPosts(Long userId, Pageable pageable) {
+    public PageResponseDto<ReviewListResponse> getPosts(Long userId, Pageable pageable, List<String> contentIds) {
 
-        // 1. 로그인 유저의 친구 ID 리스트 조회
-        List<Long> friendIds = List.of(1L,2L,3L);
+        // 1. 친구 목록 pet_id 배열 형태로 준비
+        String friendPetIds = "{1,2,3}"; // 실제로는 쿼리로 조회해서 join(",") 후 "{...}"로 변환
 
-        // 2. 본인 포함 친구 전체 리스트
-        List<Long> targetUserIds = new ArrayList<>(friendIds);
-        targetUserIds.add(userId);
+        // 2. 쿼리 실행
+        Page<Object[]> page = travelRepository.findAllByIsOpenOrFriendsPrivate(friendPetIds, contentIds, pageable);
 
-        // 3. 해당 사용자들(본인 + 친구들)의 리뷰 목록 페이징 조회
-        Page<Object[]> page = travelRepository.findReviewsWithLatestVisitUser(targetUserIds, pageable);
+        // 3. DTO 변환
+        List<ReviewListResponse> content = page.stream()
+            .map(row -> new ReviewListResponse(
+                ((Number) row[0]).longValue(), // post_id
+                (String) row[1],               // content_id
+                (String) row[2],               // pet_name
+                (String) row[3],                // post_image
+                ((Number) row[4]).longValue()   // pet_image
+            ))
+            .collect(Collectors.toList());
 
-        // 4. 페이지 결과를 DTO로 변환
-        List<ReviewListResponse> content = page.stream().map(record -> {
-            Post review = (Post) record[0];
-            String visitUserName = (String) record[1];
-            return new ReviewListResponse(review.getPostId(), review.getContentId(), visitUserName);
-        }).collect(Collectors.toList());
-
-        return new PageResponseDto<>(content, page.hasNext(), page.getTotalElements(), page.getNumber(), page.getSize());
+        return new PageResponseDto<>(
+            content,
+            page.hasNext(),
+            page.getTotalElements(),
+            page.getNumber(),
+            page.getSize()
+        );
     }
 
-    
 }

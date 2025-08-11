@@ -72,9 +72,10 @@ public class TravelController {
     public ResponseEntity<PageResponseDto<ReviewListResponse>> getPosts(
         @AuthenticationPrincipal UserAccount currentUser,
         @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size) {
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) List<String> contentIds) {
             Pageable pageable = PageRequest.of(page, size);
-            PageResponseDto<ReviewListResponse> posts = travelService.getPosts(currentUser.getId(), pageable);
+            PageResponseDto<ReviewListResponse> posts = travelService.getPosts(currentUser.getId(), pageable, contentIds);
         return ResponseEntity.ok(posts);
     }
 

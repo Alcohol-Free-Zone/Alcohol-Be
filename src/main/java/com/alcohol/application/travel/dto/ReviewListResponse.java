@@ -8,11 +8,15 @@ import lombok.Getter;
 public class ReviewListResponse {
     private Long postId;
     private String contentId;
-    private String visitUser;
+    private String petName;
+    private String petImg;
+    private Long postImg;
 
-    public ReviewListResponse(Long postId, String contentId, String visitUser) {
+    public ReviewListResponse(Long postId, String contentId, String petName, String petImg, Long postImg) {
         this.postId = postId;
         this.contentId = contentId;
-        this.visitUser = visitUser + "님이 방문하셨습니다.";
+        this.petName = petName;
+        this.petImg = petImg;
+        this.postImg = postImg;
     }
 }

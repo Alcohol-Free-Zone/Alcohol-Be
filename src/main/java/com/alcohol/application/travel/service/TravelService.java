@@ -17,6 +17,6 @@ public interface TravelService {
 
     List<FavoriteCreateResponse> getFavorites(Long id);
 
-    PageResponseDto<ReviewListResponse> getPosts(Long userId, Pageable pageable);
+    PageResponseDto<ReviewListResponse> getPosts(Long userId, Pageable pageable, List<String> contentIds);
 
 }
