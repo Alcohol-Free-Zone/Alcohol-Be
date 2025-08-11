@@ -34,8 +34,8 @@ public class PetAlbumServiceImpl implements PetAlbumService {
     private final FileService fileService;
     private final PetRepository petRepository;
     private final FileRepository fileRepository;
-    private CustomAlbumPhotoRepository customAlbumPhotoRepository;
-    private CustomAlbumRepository customAlbumRepository;
+    private final CustomAlbumPhotoRepository customAlbumPhotoRepository;
+    private final CustomAlbumRepository customAlbumRepository;
 
     @Override
     public List<FileResponseDto> uploadPhotos(Long petId, List<MultipartFile> files) {
