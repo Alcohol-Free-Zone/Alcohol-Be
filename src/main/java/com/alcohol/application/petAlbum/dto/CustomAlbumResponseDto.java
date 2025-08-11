@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,17 +65,20 @@ public class CustomAlbumResponseDto {
     }
 
     public static CustomAlbumResponseDto from(CustomAlbum album) {
-        List<CustomAlbumPhotoDto> photoDtos = album.getPhotos().stream()
-                .map(photo -> CustomAlbumPhotoDto.builder()
-                        .id(photo.getId())
-                        .petId(photo.getPet().getPetId())
-                        .petName(photo.getPet().getPetName())
-                        .file(FileResponseDto.from(photo.getFile()))
-                        .caption(photo.getCaption())
-                        .displayOrder(photo.getDisplayOrder())
-                        .addedAt(photo.getAddedAt())
-                        .build())
-                .collect(Collectors.toList());
+        List<CustomAlbumPhotoDto> photoDtos = new ArrayList<>();
+        if (album.getPhotos() != null) {
+            photoDtos = album.getPhotos().stream()
+                    .map(photo -> CustomAlbumPhotoDto.builder()
+                            .id(photo.getId())
+                            .petId(photo.getPet().getPetId())
+                            .petName(photo.getPet().getPetName())
+                            .file(FileResponseDto.from(photo.getFile()))
+                            .caption(photo.getCaption())
+                            .displayOrder(photo.getDisplayOrder())
+                            .addedAt(photo.getAddedAt())
+                            .build())
+                    .collect(Collectors.toList());
+        }
 
         AlbumStats stats = AlbumStats.builder()
                 .totalPhotos(photoDtos.size())

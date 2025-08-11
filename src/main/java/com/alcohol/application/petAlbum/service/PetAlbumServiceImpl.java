@@ -34,8 +34,8 @@ public class PetAlbumServiceImpl implements PetAlbumService {
     private final FileService fileService;
     private final PetRepository petRepository;
     private final FileRepository fileRepository;
-    private CustomAlbumPhotoRepository customAlbumPhotoRepository;
-    private CustomAlbumRepository customAlbumRepository;
+    private final CustomAlbumPhotoRepository customAlbumPhotoRepository;
+    private final CustomAlbumRepository customAlbumRepository;
 
     @Override
     public List<FileResponseDto> uploadPhotos(Long petId, List<MultipartFile> files) {
@@ -179,7 +179,25 @@ public class PetAlbumServiceImpl implements PetAlbumService {
 
     @Override
     public void deleteCustomAlbum(Long albumId, UserAccount user) {
+        // 1. 앨범 존재 및 소유권 확인
+        CustomAlbum album = customAlbumRepository.findById(albumId)
+                .orElseThrow(() -> new IllegalArgumentException("앨범을 찾을 수 없습니다."));
 
+        if (!album.getCreator().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("본인 앨범만 삭제할 수 있습니다.");
+        }
+
+        // 2. 앨범에 포함된 모든 사진 매핑 삭제 (원본 파일은 유지)
+        List<CustomAlbumPhoto> albumPhotos = customAlbumPhotoRepository.findByCustomAlbum(album);
+        if (!albumPhotos.isEmpty()) {
+            customAlbumPhotoRepository.deleteAll(albumPhotos);
+            log.info("커스텀 앨범 사진 매핑 삭제: albumId={}, photoCount={}", albumId, albumPhotos.size());
+        }
+
+        // 3. 앨범 자체 삭제
+        customAlbumRepository.delete(album);
+
+        log.info("커스텀 앨범 삭제 완료: albumId={}, creatorId={}", albumId, user.getId());
     }
 
     @Override
@@ -212,7 +230,7 @@ public class PetAlbumServiceImpl implements PetAlbumService {
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 펫입니다: " + petId));
 
             // 파일 업로드 (기존 FileService 활용)
-            FileResponseDto uploadedFile = fileService.uploadFile(file, FileType.PET_ALBUM, petId);
+            FileResponseDto uploadedFile = fileService.uploadFile(file, FileType.CUSTOM_ALBUM, petId);
 
             // File 엔터티 조회
             File fileEntity = fileRepository.findById(uploadedFile.getId())
