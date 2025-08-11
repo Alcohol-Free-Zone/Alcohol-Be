@@ -11,6 +11,8 @@ public interface FileService {
 
     FileResponseDto uploadFile(MultipartFile file, FileType fileType, Long relatedId);
 
+    FileResponseDto uploadProfileImageAndUpdate(MultipartFile file, Long userId);
+
     List<FileResponseDto> uploadMultipleFiles(List<MultipartFile> files, FileType fileType, Long relatedId);
 
     List<FileResponseDto> getFilesByTypeAndRelatedId(FileType fileType, Long relatedId);

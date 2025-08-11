@@ -27,11 +27,7 @@ public class FileController {
             @RequestParam("file") MultipartFile file,
             @AuthenticationPrincipal UserAccount currentUser
     ) {
-        // 기존 프로필 이미지 삭제
-        fileService.deleteFilesByTypeAndRelatedId(FileType.PROFILE, currentUser.getId());
-
-        // 기존 FileType.PROFILE 사용
-        FileResponseDto response = fileService.uploadFile(file, FileType.PROFILE, currentUser.getId());
+        FileResponseDto response = fileService.uploadProfileImageAndUpdate(file, currentUser.getId());
         return ResponseEntity.ok(response);
     }
 

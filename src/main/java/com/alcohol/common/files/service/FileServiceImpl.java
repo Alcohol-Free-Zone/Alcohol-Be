@@ -1,5 +1,7 @@
 package com.alcohol.common.files.service;
 
+import com.alcohol.application.userAccount.entity.UserAccount;
+import com.alcohol.application.userAccount.repository.UserAccountRepository;
 import com.alcohol.common.files.dto.FileResponseDto;
 import com.alcohol.common.files.entity.FileType;
 import com.alcohol.common.files.entity.File;
@@ -34,6 +36,7 @@ import java.util.stream.Collectors;
 public class FileServiceImpl implements FileService {
 
     private final FileRepository fileRepository;
+    private final UserAccountRepository userAccountRepository;
 
     @Value("${files.prefix}")
     private String filePrefix;         // c:/upload
@@ -85,6 +88,27 @@ public class FileServiceImpl implements FileService {
             log.error("파일 업로드 실패: {}", e.getMessage());
             throw new RuntimeException("파일 업로드에 실패했습니다.", e);
         }
+    }
+
+
+    @Override
+    public FileResponseDto uploadProfileImageAndUpdate(MultipartFile file, Long userId) {
+        // 기존 프로필 이미지 삭제
+        deleteFilesByTypeAndRelatedId(FileType.PROFILE, userId);
+
+        // 새 프로필 이미지 업로드
+        FileResponseDto uploadedFile = uploadFile(file, FileType.PROFILE, userId);
+
+        // UserAccount의 profileImage 필드 업데이트
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        user.setProfileImage(uploadedFile.getFileUrl()); // 새 파일 URL로 업데이트
+        userAccountRepository.save(user);
+
+        log.info("프로필 이미지 업데이트 완료: userId={}, fileUrl={}", userId, uploadedFile.getFileUrl());
+
+        return uploadedFile;
     }
 
     // 의미있는 파일명 생성 (FileType별로 구분)
