@@ -29,4 +29,8 @@ public interface CustomAlbumPhotoRepository extends JpaRepository<CustomAlbumPho
     // 앨범의 고유 펫 개수 조회
     @Query("SELECT COUNT(DISTINCT cap.pet.petId) FROM CustomAlbumPhoto cap WHERE cap.customAlbum = :album")
     long countUniquePetsByCustomAlbum(@Param("album") CustomAlbum album);
+
+    // 앨범별 모든 사진 조회
+    List<CustomAlbumPhoto> findByCustomAlbum(CustomAlbum customAlbum);
+
 }
