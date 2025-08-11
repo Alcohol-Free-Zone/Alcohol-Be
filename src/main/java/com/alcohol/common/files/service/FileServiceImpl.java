@@ -207,9 +207,9 @@ public class FileServiceImpl implements FileService {
             throw new IllegalArgumentException("빈 파일은 업로드할 수 없습니다.");
         }
 
-        // 파일 크기 제한 (10MB)
-        if (file.getSize() > 10 * 1024 * 1024) {
-            throw new IllegalArgumentException("파일 크기는 10MB를 초과할 수 없습니다.");
+        // 파일 크기 제한 (100MB)
+        if (file.getSize() > 100 * 1024 * 1024) {
+            throw new IllegalArgumentException("파일 크기는 100MB를 초과할 수 없습니다.");
         }
     }
 
