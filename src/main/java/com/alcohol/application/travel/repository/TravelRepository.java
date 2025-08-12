@@ -16,34 +16,38 @@ public interface TravelRepository extends JpaRepository<Post, Long>{
         SELECT 
             p.post_id AS postId,
             p.content_id AS contentId,
-            MIN(p1.pet_name) AS petName,
-            MIN(p1.img_url) AS petImage,
-            MIN(f.file_path) AS postImage, -- 대표 이미지
+            MAX(p1.pet_name) AS petName,
+            MAX(f.id) as postImage,
+            MAX(f2.id) as petImage,
             p.is_open AS isOpen
         FROM post p
-        LEFT JOIN post_pet pp 
-            ON pp.post_id = p.post_id
+        LEFT JOIN post_pets pp 
+            ON pp.post_id = p.post_id AND pp.pet_id in (:petIds) 
         LEFT JOIN pet p1 
             ON p1.pet_id = pp.pet_id
-        LEFT JOIN post_file pf 
+        LEFT JOIN post_files pf 
             ON pf.post_id = p.post_id
         LEFT JOIN file f
-            ON f.file_id = pf.file_id
-        WHERE (p.is_open = 'A' AND p.content_id IN :contentIds)
-            OR (p.pet_ids && CAST(:petIds AS bigint[]) AND p.is_open = 'F')
+            ON f.related_id = pf.file_id and f.file_type = 'POST_IMAGE'
+        LEFT JOIN file f2
+        	ON f2.related_id = pp.pet_id and f2.file_type = 'PET_PROFILE'
+        WHERE (p.is_open = 'A' AND p.content_id IN ('A005'))
+            OR (pp.pet_id in (:petIds) AND p.is_open = 'F')
             OR (p.user_id = :userId AND p.is_open = 'M')
         GROUP BY p.post_id
         """,
         countQuery = """
             SELECT COUNT(DISTINCT p.post_id)
             FROM post p
-            WHERE (p.is_open = 'A' AND p.content_id IN :contentIds)
-            OR (p.pet_ids && CAST(:petIds AS bigint[]) AND p.is_open = 'F')
+            LEFT JOIN post_pets pp 
+                ON pp.post_id = p.post_id AND pp.pet_id IN (:petIds)
+            WHERE (p.is_open = 'A' AND p.content_id IN (:contentIds))
+            OR (pp.pet_id IN (:petIds) AND p.is_open = 'F')
             OR (p.user_id = :userId AND p.is_open = 'M')
             """,
         nativeQuery = true)
     Page<Object[]> findAllByIsOpenOrFriendsPrivate(
-        @Param("petIds") String petIds,
+        @Param("petIds") List<Long> petIds,
         @Param("contentIds") List<String> contentIds,
         @Param("userId") Long userId,
         Pageable pageable

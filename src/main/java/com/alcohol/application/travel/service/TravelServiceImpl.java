@@ -110,21 +110,17 @@ public class TravelServiceImpl implements TravelService {
         // 1. 친구 목록 pet_id 배열 형태로 준비
         List<Long> petIds = petFollowRepository.findPetIdsByFollower_id(userId);
 
-        String friendPetIds = petIds.stream()
-            .map(String::valueOf)
-            .collect(Collectors.joining(",", "{", "}"));
-
         // 2. 쿼리 실행
-        Page<Object[]> page = travelRepository.findAllByIsOpenOrFriendsPrivate(friendPetIds, contentIds, userId, pageable);
+        Page<Object[]> page = travelRepository.findAllByIsOpenOrFriendsPrivate(petIds, contentIds, userId, pageable);
 
         // 3. DTO 변환
         List<ReviewListResponse> content = page.stream()
             .map(row -> new ReviewListResponse(
-                ((Number) row[0]).longValue(), // post_id
-                (String) row[1],               // content_id
-                (String) row[2],               // pet_name
-                (String) row[3],                // post_image
-                ((Number) row[4]).longValue()   // pet_image
+                ((Number) row[0]).longValue(),
+                (String) row[1],
+                (String) row[2],
+                row[3] != null ? ((Number) row[3]).longValue() : null,
+                row[4] != null ? ((Number) row[4]).longValue() : null
             ))
             .collect(Collectors.toList());
 
