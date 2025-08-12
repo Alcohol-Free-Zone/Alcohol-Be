@@ -1,5 +1,6 @@
 package com.alcohol.application.travel.service;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,6 +14,7 @@ import com.alcohol.application.petFollow.repository.PetFollowRepository;
 import com.alcohol.application.travel.dto.FavoriteCreateResponse;
 import com.alcohol.application.travel.dto.PostCreateRequest;
 import com.alcohol.application.travel.dto.ReviewListResponse;
+import com.alcohol.application.travel.dto.ReviewResponse;
 import com.alcohol.application.travel.entitiy.Favorite;
 import com.alcohol.application.travel.entitiy.Post;
 import com.alcohol.application.travel.repository.FavoriteRepository;
@@ -133,10 +135,18 @@ public class TravelServiceImpl implements TravelService {
         );
     }
 
-    public List<String> getPost(Long postId) {
-        Post post = travelRepository.findById(postId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 게시글이 존재하지 않습니다."));
-        throw new UnsupportedOperationException("Unimplemented method 'getPost'");
+    public List<ReviewResponse> getPost(Long postId) {
+        List<Object[]> results = travelRepository.getPostNative(postId);
+
+        return results.stream()
+            .map(row -> new ReviewResponse(
+                ((Number) row[0]).longValue(),
+                row[1] == null ? null : ((Timestamp) row[1]).toLocalDateTime(),
+                row[2] == null ? null : ((Number) row[2]).intValue(),
+                row[3] == null ? null : ((Number) row[3]).longValue(),
+                (String) row[4]
+            ))
+            .collect(Collectors.toList());
     }
 
 }

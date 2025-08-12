@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import com.alcohol.application.travel.dto.ReviewResponse;
 import com.alcohol.application.travel.entitiy.Post;
 
 public interface TravelRepository extends JpaRepository<Post, Long>{
@@ -52,5 +53,21 @@ public interface TravelRepository extends JpaRepository<Post, Long>{
         @Param("userId") Long userId,
         Pageable pageable
     );
+
+    @Query(value = """
+        SELECT distinct
+            p.post_id AS postId,
+            p.created_at as createdAt,
+            p.rating,
+            f.id as imgId,
+            ua.nickname
+        FROM post p
+        left join post_files pf on pf.post_id = p.post_id
+        left join file f on f.related_id = pf.post_id
+		left join user_account ua on ua.id = p.user_id      
+		where 1=1
+		and p.post_id = :postId
+        """, nativeQuery = true)
+    List<Object[]> getPostNative(@Param("postId") Long postId);
 
 }

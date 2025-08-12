@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import com.alcohol.application.travel.dto.FavoriteCreateResponse;
 import com.alcohol.application.travel.dto.PostCreateRequest;
 import com.alcohol.application.travel.dto.ReviewListResponse;
+import com.alcohol.application.travel.dto.ReviewResponse;
 import com.alcohol.util.pagination.PageResponseDto;
 
 public interface TravelService {
@@ -19,6 +20,6 @@ public interface TravelService {
 
     PageResponseDto<ReviewListResponse> getPosts(Long userId, Pageable pageable, List<String> contentIds);
 
-    List<String> getPost(Long postId);
+    List<ReviewResponse> getPost(Long postId);
 
 }

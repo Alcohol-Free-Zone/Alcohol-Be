@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.alcohol.application.travel.dto.FavoriteCreateResponse;
 import com.alcohol.application.travel.dto.PostCreateRequest;
 import com.alcohol.application.travel.dto.ReviewListResponse;
+import com.alcohol.application.travel.dto.ReviewResponse;
 import com.alcohol.application.travel.service.TravelService;
 import com.alcohol.application.userAccount.entity.UserAccount;
 import com.alcohol.util.pagination.PageResponseDto;
@@ -41,15 +42,6 @@ public class TravelController {
         // 게시글 생성 로직 구현
         travelService.createPost(request, currentUser.getId());
         return ResponseEntity.ok("게시물 생성/변경 완료");
-    }
-
-    // 게시글(리뷰) 단일 조회
-    @GetMapping("/post/{postId}")
-    public ResponseEntity<List<String>> getPost(
-        @PathVariable Long postId
-    ) {
-        List<String> postImgs = travelService.getPost(postId);
-        return ResponseEntity.ok(postImgs);
     }
 
     // 관심목록 추가
@@ -86,6 +78,13 @@ public class TravelController {
             Pageable pageable = PageRequest.of(page, size);
             PageResponseDto<ReviewListResponse> posts = travelService.getPosts(currentUser.getId(), pageable, contentIds);
         return ResponseEntity.ok(posts);
+    }
+
+    // 리뷰 단건 리스트 조회
+    @GetMapping("/{postId}")
+    public ResponseEntity<List<ReviewResponse>> getPost(@PathVariable Long postId) {
+        List<ReviewResponse> responses = travelService.getPost(postId);
+        return ResponseEntity.ok(responses);
     }
 
 }
