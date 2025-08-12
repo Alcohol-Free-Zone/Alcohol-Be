@@ -43,6 +43,15 @@ public class TravelController {
         return ResponseEntity.ok("게시물 생성/변경 완료");
     }
 
+    // 게시글(리뷰) 단일 조회
+    @GetMapping("/post/{postId}")
+    public ResponseEntity<List<String>> getPost(
+        @PathVariable Long postId
+    ) {
+        List<String> postImgs = travelService.getPost(postId);
+        return ResponseEntity.ok(postImgs);
+    }
+
     // 관심목록 추가
     @PostMapping("/favorite/{contentId}")
     public ResponseEntity<FavoriteCreateResponse> createFavorite(

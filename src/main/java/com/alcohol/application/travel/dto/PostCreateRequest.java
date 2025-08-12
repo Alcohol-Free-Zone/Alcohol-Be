@@ -12,7 +12,7 @@ public class PostCreateRequest {
     private Long postId;
     private String contentId;
     private String planName;
-    private List<Long> imageIds;
+    private List<String> imageIds;
     private List<Long> petIds;
     private int rating;
     private String isOpen;

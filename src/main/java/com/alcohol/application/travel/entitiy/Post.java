@@ -32,7 +32,7 @@ public class Post {
 
     private String planName;
 
-    private List<Long> imageIds;
+    private List<String> imageIds;
 
     private List<Long> petIds;
 

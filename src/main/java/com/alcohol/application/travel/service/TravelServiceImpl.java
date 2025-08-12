@@ -109,4 +109,10 @@ public class TravelServiceImpl implements TravelService {
         );
     }
 
+    public List<String> getPost(Long postId) {
+        Post post = travelRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 게시글이 존재하지 않습니다."));
+        throw new UnsupportedOperationException("Unimplemented method 'getPost'");
+    }
+
 }

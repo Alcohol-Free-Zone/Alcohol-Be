@@ -19,4 +19,6 @@ public interface TravelService {
 
     PageResponseDto<ReviewListResponse> getPosts(Long userId, Pageable pageable, List<String> contentIds);
 
+    List<String> getPost(Long postId);
+
 }
