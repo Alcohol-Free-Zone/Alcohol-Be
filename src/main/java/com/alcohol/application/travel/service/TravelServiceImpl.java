@@ -1,6 +1,5 @@
 package com.alcohol.application.travel.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -8,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.alcohol.application.petFollow.entity.PetFollow;
+import com.alcohol.application.petFollow.repository.PetFollowRepository;
 import com.alcohol.application.travel.dto.FavoriteCreateResponse;
 import com.alcohol.application.travel.dto.PostCreateRequest;
 import com.alcohol.application.travel.dto.ReviewListResponse;
@@ -30,6 +31,7 @@ public class TravelServiceImpl implements TravelService {
 
     private final TravelRepository travelRepository;
     private final FavoriteRepository favoriteRepository;
+    private final PetFollowRepository petFollowRepository;
 
     public void createPost(PostCreateRequest request, Long userId) {
         Post post;
@@ -78,10 +80,14 @@ public class TravelServiceImpl implements TravelService {
     public PageResponseDto<ReviewListResponse> getPosts(Long userId, Pageable pageable, List<String> contentIds) {
 
         // 1. 친구 목록 pet_id 배열 형태로 준비
-        String friendPetIds = "{1,2,3}"; // 실제로는 쿼리로 조회해서 join(",") 후 "{...}"로 변환
+        List<Long> petIds = petFollowRepository.findPetIdsByFollower_id(userId);
+
+        String friendPetIds = petIds.stream()
+            .map(String::valueOf)
+            .collect(Collectors.joining(",", "{", "}"));
 
         // 2. 쿼리 실행
-        Page<Object[]> page = travelRepository.findAllByIsOpenOrFriendsPrivate(friendPetIds, contentIds, pageable);
+        Page<Object[]> page = travelRepository.findAllByIsOpenOrFriendsPrivate(friendPetIds, contentIds, userId, pageable);
 
         // 3. DTO 변환
         List<ReviewListResponse> content = page.stream()

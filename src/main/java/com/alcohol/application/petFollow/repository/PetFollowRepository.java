@@ -1,14 +1,15 @@
 package com.alcohol.application.petFollow.repository;
 
-import com.alcohol.application.pet.entity.Pet;
-import com.alcohol.application.petFollow.entity.PetFollow;
-import com.alcohol.application.userAccount.entity.UserAccount;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
+import com.alcohol.application.pet.entity.Pet;
+import com.alcohol.application.petFollow.entity.PetFollow;
+import com.alcohol.application.userAccount.entity.UserAccount;
 
 public interface PetFollowRepository extends JpaRepository<PetFollow, Long> {
 
@@ -31,4 +32,9 @@ public interface PetFollowRepository extends JpaRepository<PetFollow, Long> {
     // 또는 Pet ID만 필요한 경우
     @Query("select pf.pet.petId from PetFollow pf where pf.follower = :follower")
     List<Long> findPetIdsByFollower(UserAccount follower);
+
+    // 리뷰에서 반려동물 팔로잉 확인
+    @Query("SELECT pf.pet.petId FROM PetFollow pf WHERE pf.follower.id = :userId")
+    List<Long> findPetIdsByFollower_id(Long userId);
+
 }
