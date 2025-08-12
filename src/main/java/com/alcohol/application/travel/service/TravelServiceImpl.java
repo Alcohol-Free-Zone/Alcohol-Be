@@ -149,4 +149,11 @@ public class TravelServiceImpl implements TravelService {
             .collect(Collectors.toList());
     }
 
+    public void deletePost(Long postId) {
+        Post post = travelRepository.findById(postId)
+        .orElseThrow(() -> new EntityNotFoundException("게시글이 없습니다"));
+
+        post.setIsDelete("Y");
+    }
+
 }

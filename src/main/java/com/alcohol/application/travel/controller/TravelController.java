@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -85,6 +86,13 @@ public class TravelController {
     public ResponseEntity<List<ReviewResponse>> getPost(@PathVariable Long postId) {
         List<ReviewResponse> responses = travelService.getPost(postId);
         return ResponseEntity.ok(responses);
+    }
+
+    // 리뷰 삭제 플래그 설정
+    @PatchMapping("/{postId}")
+    public ResponseEntity<String> deletePost(@PathVariable Long postId) {
+        travelService.deletePost(postId);
+        return ResponseEntity.ok("게시물 삭제 완료");
     }
 
 }

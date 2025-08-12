@@ -32,9 +32,9 @@ public interface TravelRepository extends JpaRepository<Post, Long>{
             ON f.related_id = pf.file_id and f.file_type = 'POST_IMAGE'
         LEFT JOIN file f2
         	ON f2.related_id = pp.pet_id and f2.file_type = 'PET_PROFILE'
-        WHERE (p.is_open = 'A' AND p.content_id IN ('A005'))
-            OR (pp.pet_id in (:petIds) AND p.is_open = 'F')
-            OR (p.user_id = :userId AND p.is_open = 'M')
+        WHERE (p.is_open = 'A' AND p.is_delete = 'N' AND p.content_id IN ('A005'))
+            OR (pp.pet_id in (:petIds) AND p.is_open = 'F' AND p.is_delete = 'N')
+            OR (p.user_id = :userId AND p.is_open = 'M' AND p.is_delete = 'N')
         GROUP BY p.post_id
         """,
         countQuery = """
@@ -67,6 +67,7 @@ public interface TravelRepository extends JpaRepository<Post, Long>{
 		left join user_account ua on ua.id = p.user_id      
 		where 1=1
 		and p.post_id = :postId
+        and p.is_delete = 'N'
         """, nativeQuery = true)
     List<Object[]> getPostNative(@Param("postId") Long postId);
 

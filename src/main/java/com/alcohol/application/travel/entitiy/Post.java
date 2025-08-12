@@ -23,6 +23,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.Builder.Default;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -65,6 +66,9 @@ public class Post {
     private String isPetYn;
 
     private Long userId;
+
+    // 삭제 여부
+    private String isDelete = "N";
 
     // 새 Post 생성
     public static Post fromRequest(PostCreateRequest request) {

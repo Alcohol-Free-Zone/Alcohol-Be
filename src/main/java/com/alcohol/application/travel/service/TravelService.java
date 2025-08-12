@@ -22,4 +22,6 @@ public interface TravelService {
 
     List<ReviewResponse> getPost(Long postId);
 
+    void deletePost(Long postId);
+
 }
