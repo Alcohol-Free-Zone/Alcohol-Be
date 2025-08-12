@@ -76,7 +76,7 @@ public class TravelController {
         return ResponseEntity.ok(favorites);
     }
 
-    // 리뷰 리스트조회
+    // 리뷰 리스트 조회
     @GetMapping
     public ResponseEntity<PageResponseDto<ReviewListResponse>> getPosts(
         @AuthenticationPrincipal UserAccount currentUser,

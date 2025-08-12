@@ -2,14 +2,23 @@ package com.alcohol.application.travel.entitiy;
 
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.CurrentTimestamp;
+
+import com.alcohol.application.pet.entity.Pet;
 import com.alcohol.application.travel.dto.PostCreateRequest;
+import com.alcohol.common.files.entity.File;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,33 +35,42 @@ public class Post {
     // 게시글 ID
     private Long postId;
 
-    private Long planId;
-
     private String contentId;
 
     private String planName;
 
-    private List<String> imageIds;
+    @ManyToMany
+    @JoinTable(
+        name = "post_files",
+        joinColumns = @JoinColumn(name = "post_id"),
+        inverseJoinColumns = @JoinColumn(name = "file_id")
+    )
+    private List<File> images = new ArrayList<>();
 
-    private List<Long> petIds;
+    @ManyToMany
+    @JoinTable(
+        name = "post_pets",
+        joinColumns = @JoinColumn(name = "post_id"),
+        inverseJoinColumns = @JoinColumn(name = "pet_id")
+    )
+    private List<Pet> pets = new ArrayList<>();
 
     private int rating;
 
     private String isOpen;
 
+    @CurrentTimestamp
     private Timestamp createdAt;
 
     private String isPetYn;
 
     private Long userId;
 
+    // 새 Post 생성
     public static Post fromRequest(PostCreateRequest request) {
         Post post = new Post();
-        post.setPlanId(request.getPlanId());
         post.setContentId(request.getContentId());
         post.setPlanName(request.getPlanName());
-        post.setImageIds(request.getImageIds());
-        post.setPetIds(request.getPetIds());
         post.setRating(request.getRating());
         post.setIsOpen(request.getIsOpen());
         post.setIsPetYn(request.getIsPetYn());
@@ -60,17 +78,14 @@ public class Post {
         return post;
     }
 
+    // 기존 Post 수정
     public void updateFromRequest(PostCreateRequest request) {
-        this.planId = request.getPlanId();
-        this.contentId = request.getContentId();
-        this.planName = request.getPlanName();
-        this.imageIds = request.getImageIds();
-        this.petIds = request.getPetIds();
-        this.rating = request.getRating();
-        this.isOpen = request.getIsOpen();
-        this.isPetYn = request.getIsPetYn();
-        this.createdAt = request.getCreatedAt();
+        this.setContentId(request.getContentId());
+        this.setPlanName(request.getPlanName());
+        this.setRating(request.getRating());
+        this.setIsOpen(request.getIsOpen());
+        this.setIsPetYn(request.getIsPetYn());
+        this.setCreatedAt(request.getCreatedAt());
+        // images, pets는 서비스 계층에서 따로 처리 (ID → 엔티티 변환)
     }
-
-
 }

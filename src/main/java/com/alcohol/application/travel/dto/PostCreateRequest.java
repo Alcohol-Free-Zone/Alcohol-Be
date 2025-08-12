@@ -8,12 +8,11 @@ import lombok.Getter;
 
 @Getter
 public class PostCreateRequest {
-    private Long planId;
     private Long postId;
     private String contentId;
     private String planName;
-    private List<String> imageIds;
-    private List<Long> petIds;
+    private List<Long> images;
+    private List<Long> pets;
     private int rating;
     private String isOpen;
     private String isPetYn;

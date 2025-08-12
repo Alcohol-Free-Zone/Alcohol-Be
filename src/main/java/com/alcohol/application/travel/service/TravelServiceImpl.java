@@ -7,7 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.alcohol.application.petFollow.entity.PetFollow;
+import com.alcohol.application.pet.entity.Pet;
+import com.alcohol.application.pet.repository.PetRepository;
 import com.alcohol.application.petFollow.repository.PetFollowRepository;
 import com.alcohol.application.travel.dto.FavoriteCreateResponse;
 import com.alcohol.application.travel.dto.PostCreateRequest;
@@ -16,6 +17,8 @@ import com.alcohol.application.travel.entitiy.Favorite;
 import com.alcohol.application.travel.entitiy.Post;
 import com.alcohol.application.travel.repository.FavoriteRepository;
 import com.alcohol.application.travel.repository.TravelRepository;
+import com.alcohol.common.files.entity.File;
+import com.alcohol.common.files.repository.FileRepository;
 import com.alcohol.util.pagination.PageResponseDto;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -32,30 +35,55 @@ public class TravelServiceImpl implements TravelService {
     private final TravelRepository travelRepository;
     private final FavoriteRepository favoriteRepository;
     private final PetFollowRepository petFollowRepository;
+    private final FileRepository fileRepository;
+    private final PetRepository petRepository;
 
     public void createPost(PostCreateRequest request, Long userId) {
         Post post;
 
         if (request.getPostId() != null) {
-            // 수정 로직
+            // ===== 수정 로직 =====
             post = travelRepository.findById(request.getPostId())
                     .orElseThrow(() -> new EntityNotFoundException("해당 게시글이 존재하지 않습니다."));
 
-            // 작성자 본인인지 검증
             if (!post.getUserId().equals(userId)) {
                 throw new SecurityException("본인 게시글만 수정할 수 있습니다.");
             }
 
-            // 수정할 필드 업데이트
+            // 기본 필드 업데이트
             post.updateFromRequest(request);
 
+            // images 업데이트
+            post.getImages().clear();
+            if (request.getImages() != null && !request.getImages().isEmpty()) {
+                List<File> files = fileRepository.findAllById(request.getImages());
+                post.getImages().addAll(files);
+            }
+
+            // pets 업데이트
+            post.getPets().clear();
+            if (request.getPets() != null && !request.getPets().isEmpty()) {
+                List<Pet> pets = petRepository.findAllById(request.getPets());
+                post.getPets().addAll(pets);
+            }
+
         } else {
-            // 생성 로직
+            // ===== 생성 로직 =====
             post = Post.fromRequest(request);
             post.setUserId(userId);
+
+            if (request.getImages() != null && !request.getImages().isEmpty()) {
+                List<File> files = fileRepository.findAllById(request.getImages());
+                post.setImages(files);
+            }
+
+            if (request.getPets() != null && !request.getPets().isEmpty()) {
+                List<Pet> pets = petRepository.findAllById(request.getPets());
+                post.setPets(pets);
+            }
         }
 
-        travelRepository.save(post); 
+        travelRepository.save(post);
     }
 
     public Long createFavorite(String contentId, Long userId) {
