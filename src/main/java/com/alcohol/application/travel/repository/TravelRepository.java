@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import com.alcohol.application.travel.dto.ReviewResponse;
 import com.alcohol.application.travel.entitiy.Post;
 
 public interface TravelRepository extends JpaRepository<Post, Long>{
@@ -70,5 +69,56 @@ public interface TravelRepository extends JpaRepository<Post, Long>{
         and p.is_delete = 'N'
         """, nativeQuery = true)
     List<Object[]> getPostNative(@Param("postId") Long postId);
+
+    @Query(value = """
+        WITH ranked_posts AS (
+            SELECT
+                p.*,
+                ROW_NUMBER() OVER (PARTITION BY p.content_id ORDER BY p.created_at DESC) AS rn
+            FROM post p
+            WHERE p.is_delete = 'N'
+            AND p.content_id IN (:contentIds)
+        ),
+        filtered_posts AS (
+            SELECT *
+            FROM ranked_posts
+            WHERE rn <= 10
+        )
+        SELECT
+            content_id AS contentId ,
+            AVG(rating) AS rating,
+            CASE
+                WHEN AVG(CASE WHEN is_pet_yn = 'Y' THEN 1.0 ELSE 0 END) >= 0.5 THEN 'Y'
+                ELSE 'N'
+            END AS isPetYn
+        FROM filtered_posts
+        GROUP BY content_id;
+        """,
+        countQuery = """
+            WITH ranked_posts AS (
+                SELECT
+                    p.post_id,
+                    p.content_id,
+                    ROW_NUMBER() OVER (PARTITION BY p.content_id ORDER BY p.created_at DESC) AS rn
+                FROM post p
+                LEFT JOIN post_pets pp 
+                    ON pp.post_id = p.post_id AND pp.pet_id IN (:petIds)
+                WHERE p.is_delete = 'N'
+                AND (
+                    (p.is_open = 'A' AND p.content_id IN (:contentIds))
+                    OR (pp.pet_id IN (:petIds) AND p.is_open = 'F')
+                    OR (p.user_id = :userId AND p.is_open = 'M')
+                )
+            ),
+            filtered_posts AS (
+                SELECT *
+                FROM ranked_posts
+                WHERE rn <= 10
+            )
+            SELECT COUNT(DISTINCT content_id)
+            FROM filtered_posts
+            """,
+        nativeQuery = true)
+    Page<Object[]> getArounds(List<String> contentIds, Pageable pageable);
 
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 
+import com.alcohol.application.travel.dto.AroundListResponse;
 import com.alcohol.application.travel.dto.FavoriteCreateResponse;
 import com.alcohol.application.travel.dto.PostCreateRequest;
 import com.alcohol.application.travel.dto.ReviewListResponse;
@@ -23,5 +24,7 @@ public interface TravelService {
     List<ReviewResponse> getPost(Long postId);
 
     void deletePost(Long postId);
+
+    PageResponseDto<AroundListResponse> getArounds(Pageable pageable, List<String> contentIds);
 
 }

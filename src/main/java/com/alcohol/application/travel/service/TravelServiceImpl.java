@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.alcohol.application.pet.entity.Pet;
 import com.alcohol.application.pet.repository.PetRepository;
 import com.alcohol.application.petFollow.repository.PetFollowRepository;
+import com.alcohol.application.travel.dto.AroundListResponse;
 import com.alcohol.application.travel.dto.FavoriteCreateResponse;
 import com.alcohol.application.travel.dto.PostCreateRequest;
 import com.alcohol.application.travel.dto.ReviewListResponse;
@@ -154,6 +155,23 @@ public class TravelServiceImpl implements TravelService {
         .orElseThrow(() -> new EntityNotFoundException("게시글이 없습니다"));
 
         post.setIsDelete("Y");
+    }
+
+    public PageResponseDto<AroundListResponse> getArounds(Pageable pageable, List<String> contentIds) {
+        
+        Page<Object[]> page = travelRepository.getArounds(contentIds, pageable);
+
+        List<AroundListResponse> content = page.stream()
+            .map(row -> AroundListResponse.from(row))
+            .collect(Collectors.toList());
+
+        return new PageResponseDto<>(
+            content,
+            page.hasNext(),
+            page.getTotalElements(),
+            page.getNumber(),
+            page.getSize()
+        );
     }
 
 }

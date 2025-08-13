@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alcohol.application.travel.dto.AroundListResponse;
 import com.alcohol.application.travel.dto.FavoriteCreateResponse;
 import com.alcohol.application.travel.dto.PostCreateRequest;
 import com.alcohol.application.travel.dto.ReviewListResponse;
@@ -93,6 +94,18 @@ public class TravelController {
     public ResponseEntity<String> deletePost(@PathVariable Long postId) {
         travelService.deletePost(postId);
         return ResponseEntity.ok("게시물 삭제 완료");
+    }
+
+
+    // 주변정보 리스트 정보 제공
+    @GetMapping("/around")
+    public ResponseEntity<PageResponseDto<AroundListResponse>> getArounds(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) List<String> contentIds) {
+            Pageable pageable = PageRequest.of(page, size);
+            PageResponseDto<AroundListResponse> posts = travelService.getArounds(pageable, contentIds);
+        return ResponseEntity.ok(posts);
     }
 
 }
