@@ -65,8 +65,8 @@ public class TravelController {
     
     // 관심목록 조회
     @GetMapping("/favorite")
-    public ResponseEntity<List<FavoriteCreateResponse>> getFavorites(@AuthenticationPrincipal UserAccount currentUser) {
-        List<FavoriteCreateResponse> favorites = travelService.getFavorites(currentUser.getId());
+    public ResponseEntity<List<String>> getFavorites(@AuthenticationPrincipal UserAccount currentUser) {
+        List<String> favorites = travelService.getFavorites(currentUser.getId());
         return ResponseEntity.ok(favorites);
     }
 

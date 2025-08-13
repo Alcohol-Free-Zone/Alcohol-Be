@@ -97,15 +97,9 @@ public class TravelServiceImpl implements TravelService {
         return favorite.getFavoriteId();
     }
 
-    public List<FavoriteCreateResponse> getFavorites(Long id) {
-        List<Favorite> favorites = favoriteRepository.findByUserId(id);
-        return favorites.stream()
-                .map(favorite -> FavoriteCreateResponse.builder()
-                        .contentId(favorite.getContentId())
-                        .userId(favorite.getUserId())
-                        .favoriteId(favorite.getFavoriteId())
-                        .build())
-                .toList();
+    public List<String> getFavorites(Long id) {
+        List<String> favorites = favoriteRepository.getFavorites(id);
+        return favorites;
     }
 
     public PageResponseDto<ReviewListResponse> getPosts(Long userId, Pageable pageable, List<String> contentIds) {
