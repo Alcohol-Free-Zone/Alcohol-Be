@@ -16,7 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alcohol.application.travel.dto.AroundListResponse;
+import com.alcohol.application.travel.dto.AroundProjection;
 import com.alcohol.application.travel.dto.FavoriteCreateResponse;
+import com.alcohol.application.travel.dto.FavoriteToggleResult;
+import com.alcohol.application.travel.dto.PetAllowResponse;
 import com.alcohol.application.travel.dto.PostCreateRequest;
 import com.alcohol.application.travel.dto.ReviewListResponse;
 import com.alcohol.application.travel.dto.ReviewResponse;
@@ -46,18 +49,18 @@ public class TravelController {
         return ResponseEntity.ok("게시물 생성/변경 완료");
     }
 
-    // 관심목록 추가
     @PostMapping("/favorite/{contentId}")
-    public ResponseEntity<FavoriteCreateResponse> createFavorite(
+    public ResponseEntity<FavoriteCreateResponse> toggleFavorite(
         @PathVariable String contentId,
         @AuthenticationPrincipal UserAccount currentUser
     ) {
-        Long favoriteId = travelService.createFavorite(contentId, currentUser.getId());
+        FavoriteToggleResult result = travelService.toggleFavorite(contentId, currentUser.getId());
 
         FavoriteCreateResponse response = FavoriteCreateResponse.builder()
             .contentId(contentId)
             .userId(currentUser.getId())
-            .favoriteId(favoriteId)
+            .favoriteId(result.getFavoriteId()) // 삭제 시 null 가능
+            .message(result.getMessage())       // "추가되었습니다" or "삭제되었습니다"
             .build();
 
         return ResponseEntity.ok(response);
@@ -107,5 +110,22 @@ public class TravelController {
             PageResponseDto<AroundListResponse> posts = travelService.getArounds(pageable, contentIds);
         return ResponseEntity.ok(posts);
     }
+
+    // 주변정보 상세 정보 제공
+    @GetMapping("/around/{contentId}")
+    public ResponseEntity<AroundProjection> getAround(
+        @PathVariable String contentId) {
+            AroundProjection getAround = travelService.getAround(contentId);
+        return ResponseEntity.ok(getAround);
+    }
+
+    // 반려동물 동반 여부 확인
+    @GetMapping("/pet-allowed")
+    public ResponseEntity<List<PetAllowResponse>> getPetAllowed(
+        @RequestParam(required = false) List<String> contentIds) {
+            List<PetAllowResponse> posts = travelService.getPetAllowed(contentIds);
+        return ResponseEntity.ok(posts);
+    }
+
 
 }

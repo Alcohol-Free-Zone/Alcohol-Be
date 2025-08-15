@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import com.alcohol.application.travel.dto.AroundProjection;
+import com.alcohol.application.travel.dto.PetAllowResponse;
 import com.alcohol.application.travel.entitiy.Post;
 
 public interface TravelRepository extends JpaRepository<Post, Long>{
@@ -120,5 +122,27 @@ public interface TravelRepository extends JpaRepository<Post, Long>{
             """,
         nativeQuery = true)
     Page<Object[]> getArounds(List<String> contentIds, Pageable pageable);
+
+
+    @Query(value = """
+        SELECT
+            MAX(p.content_id) AS contentId,
+            AVG(p.rating) AS rating,
+            count(p.content_id) AS reviewCount 
+        FROM post p 
+        WHERE 1=1
+        AND p.content_id = :contentId
+        AND p.is_delete = 'N';
+        """, nativeQuery = true)
+    AroundProjection getAround(String contentId);
+
+    @Query(value = """
+        SELECT p.content_id AS contentId, p.is_pet_yn AS isPetYn, p.created_at AS createdAt
+        FROM post p
+        WHERE p.content_id IN (:contentIds)
+        AND p.is_delete = 'N'
+        ORDER BY p.content_id, p.created_at DESC
+        """, nativeQuery = true)
+    List<Object[]> findRecentPostsByContentIds(@Param("contentIds") List<String> contentIds);
 
 }

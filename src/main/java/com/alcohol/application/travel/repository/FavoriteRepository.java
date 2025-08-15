@@ -1,6 +1,7 @@
 package com.alcohol.application.travel.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,5 +17,7 @@ public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
         """,
         nativeQuery = true)
     List<String> getFavorites(@Param("id") Long id);
+
+    Optional<Favorite> findByContentIdAndUserId(String contentId, Long userId);
     
 }

@@ -1,7 +1,11 @@
 package com.alcohol.application.travel.service;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -12,7 +16,9 @@ import com.alcohol.application.pet.entity.Pet;
 import com.alcohol.application.pet.repository.PetRepository;
 import com.alcohol.application.petFollow.repository.PetFollowRepository;
 import com.alcohol.application.travel.dto.AroundListResponse;
-import com.alcohol.application.travel.dto.FavoriteCreateResponse;
+import com.alcohol.application.travel.dto.AroundProjection;
+import com.alcohol.application.travel.dto.FavoriteToggleResult;
+import com.alcohol.application.travel.dto.PetAllowResponse;
 import com.alcohol.application.travel.dto.PostCreateRequest;
 import com.alcohol.application.travel.dto.ReviewListResponse;
 import com.alcohol.application.travel.dto.ReviewResponse;
@@ -89,12 +95,19 @@ public class TravelServiceImpl implements TravelService {
         travelRepository.save(post);
     }
 
-    public Long createFavorite(String contentId, Long userId) {
-        Favorite favorite = new Favorite();
-        favorite.setContentId(contentId);
-        favorite.setUserId(userId);
-        favoriteRepository.save(favorite);
-        return favorite.getFavoriteId();
+    public FavoriteToggleResult toggleFavorite(String contentId, Long userId) {
+        Optional<Favorite> existingFavorite = favoriteRepository.findByContentIdAndUserId(contentId, userId);
+
+        if (existingFavorite.isPresent()) {
+            favoriteRepository.delete(existingFavorite.get());
+            return new FavoriteToggleResult(null, "삭제되었습니다");
+        } else {
+            Favorite favorite = new Favorite();
+            favorite.setContentId(contentId);
+            favorite.setUserId(userId);
+            favoriteRepository.save(favorite);
+            return new FavoriteToggleResult(favorite.getFavoriteId(), "추가되었습니다");
+        }
     }
 
     public List<String> getFavorites(Long id) {
@@ -168,4 +181,30 @@ public class TravelServiceImpl implements TravelService {
         );
     }
 
+    public AroundProjection getAround(String contentId) {
+        return travelRepository.getAround(contentId);
+    }
+
+    public List<PetAllowResponse> getPetAllowed(List<String> contentIds) {
+    List<Object[]> results = travelRepository.findRecentPostsByContentIds(contentIds);
+
+    // DB 결과를 contentId별로 그룹화
+    Map<String, List<String>> groupedByContent = results.stream()
+        .collect(Collectors.groupingBy(
+            row -> (String) row[0],
+            Collectors.mapping(row -> (String) row[1], Collectors.toList())
+        ));
+
+    // DB에 있는 contentId만 응답
+    return groupedByContent.entrySet().stream()
+        .map(entry -> {
+            String contentId = entry.getKey();
+            List<String> top10 = entry.getValue().stream().limit(10).toList();
+            long yCount = top10.stream().filter("Y"::equalsIgnoreCase).count();
+            String finalYn = top10.isEmpty() ? "N" : (yCount * 2 >= top10.size() ? "Y" : "N");
+            return new PetAllowResponse(contentId, finalYn);
+        })
+        .toList();
+}
+    
 }
