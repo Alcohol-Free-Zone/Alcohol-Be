@@ -1,7 +1,11 @@
 package com.alcohol.application.plan.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.alcohol.application.userAccount.entity.UserAccount;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -10,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,4 +44,7 @@ public class Plan {
     @Column(nullable = false, length = 1)
     @Builder.Default
     private String isActive = "Y";
+
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PlanContent> contents = new ArrayList<>();
 }
