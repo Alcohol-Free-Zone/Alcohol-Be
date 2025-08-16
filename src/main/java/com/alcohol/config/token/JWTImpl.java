@@ -37,7 +37,7 @@ public class JWTImpl {
                 .claim("role", role) // 권한
                 .claim("provider", providerId) // 로그인 방식만 (필요시)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expDate))
+                // .setExpiration(new Date(System.currentTimeMillis() + expDate))
                 .signWith(secretKey, SignatureAlgorithm.HS256) 
                 .compact();
          
