@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.alcohol.application.plan.dto.ContentInfoDto;
 import com.alcohol.application.plan.dto.PlanCreateUpdateRequest;
 import com.alcohol.application.plan.dto.PlanCreateUpdateResponse;
 import com.alcohol.application.plan.dto.PlanDetailDto;
@@ -61,10 +62,15 @@ public class PlanServiceImpl implements PlanService {
             planPetRepository.save(planPet);
        }
 
-       for (String contentId : planCreateUpdateRequest.getContentIdList()) {
+       for (ContentInfoDto contentInfo : planCreateUpdateRequest.getContentList()) {
             PlanContent planContent = PlanContent.builder()
                 .plan(savedPlan)
-                .contentId(contentId) // Assuming contentIdList is a list of strings
+                .contentId(contentInfo.getContentId())
+                .addr(contentInfo.getAddr())
+                .areaCode(contentInfo.getAreaCode())
+                .areaCodeNm(contentInfo.getAreaCodeNm())
+                .sigunguCode(contentInfo.getSigunguCode())
+                .sigunguCodeNm(contentInfo.getSigunguCodeNm())
                 .build();
 
             planContentRepository.save(planContent);
@@ -95,11 +101,16 @@ public class PlanServiceImpl implements PlanService {
 
             planPetRepository.save(planPet);
         }
-        
-        for (String contentId : request.getContentIdList()) {
+
+        for (ContentInfoDto contentInfo : request.getContentList()) {
             PlanContent planContent = PlanContent.builder()
                 .plan(plan)
-                .contentId(contentId)
+                .contentId(contentInfo.getContentId())
+                .addr(contentInfo.getAddr())
+                .areaCode(contentInfo.getAreaCode())
+                .areaCodeNm(contentInfo.getAreaCodeNm())
+                .sigunguCode(contentInfo.getSigunguCode())
+                .sigunguCodeNm(contentInfo.getSigunguCodeNm())
                 .build();
 
             planContentRepository.save(planContent);

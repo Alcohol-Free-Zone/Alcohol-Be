@@ -9,5 +9,5 @@ public class PlanCreateUpdateRequest {
     private Long planId;
     private List<Long> petIdList;
     private String planTitle;
-    private List<String> contentIdList;
+    private List<ContentInfoDto> contentList;
 }

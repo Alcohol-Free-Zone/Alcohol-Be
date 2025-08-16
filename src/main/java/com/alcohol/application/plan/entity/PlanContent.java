@@ -29,6 +29,21 @@ public class PlanContent {
 
     private String contentId;
 
+    // 지역코드
+    private String areaCode;
+
+    // 지역코드명
+    private String areaCodeNm;
+
+    // 시군구코드
+    private String sigunguCode;
+
+    // 시군구코드명
+    private String sigunguCodeNm;
+
+    // 주소
+    private String addr;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id", nullable = false)
     private Plan plan;
