@@ -1,5 +1,6 @@
 package com.alcohol.application.userAccount.entity;
 
+import com.alcohol.common.files.dto.FileResponseDto;
 import com.alcohol.common.files.entity.File;
 import jakarta.persistence.*;
 import lombok.*;
@@ -68,6 +69,23 @@ public class UserAccount {
     public UserAccount updateAt() {
         this.updatedAt = LocalDateTime.now();
         return this;
+    }
+
+    // ✅ 안전한 프로필 파일 접근 메서드
+    public FileResponseDto getProfileSafely() {
+        try {
+            if (profile != null) {
+                return FileResponseDto.from(profile);
+            }
+        } catch (Exception e) {
+            // Lazy loading 실패 시 null 반환
+        }
+        return null;
+    }
+
+    // 기존 getProfile()은 내부에서만 사용
+    public File getProfile() {
+        return profile;
     }
 
 
