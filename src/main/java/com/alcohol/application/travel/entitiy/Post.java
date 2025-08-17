@@ -38,14 +38,13 @@ public class Post {
 
     private String planName;
 
-    // @ManyToMany
-    // @JoinTable(
-    //     name = "post_files",
-    //     joinColumns = @JoinColumn(name = "post_id"),
-    //     inverseJoinColumns = @JoinColumn(name = "file_id")
-    // )
-    private transient List<File> images = new ArrayList<>();
-    // private List<File> images = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+        name = "post_files",
+        joinColumns = @JoinColumn(name = "post_id"),
+        inverseJoinColumns = @JoinColumn(name = "file_id")
+    )
+    private List<File> images = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
@@ -69,6 +68,9 @@ public class Post {
     // 삭제 여부
     private String isDelete = "N";
 
+    // 주소
+    private String addr;
+
     // 새 Post 생성
     public static Post fromRequest(PostCreateRequest request) {
         Post post = new Post();
@@ -78,6 +80,7 @@ public class Post {
         post.setIsOpen(request.getIsOpen());
         post.setIsPetYn(request.getIsPetYn());
         post.setCreatedAt(request.getCreatedAt());
+        post.setAddr(request.getAddr());
         return post;
     }
 
@@ -89,6 +92,7 @@ public class Post {
         this.setIsOpen(request.getIsOpen());
         this.setIsPetYn(request.getIsPetYn());
         this.setCreatedAt(request.getCreatedAt());
+        this.setAddr(request.getAddr());
         // images, pets는 서비스 계층에서 따로 처리 (ID → 엔티티 변환)
     }
 }

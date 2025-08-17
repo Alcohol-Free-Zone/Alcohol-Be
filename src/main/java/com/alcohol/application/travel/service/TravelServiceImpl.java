@@ -128,7 +128,12 @@ public class TravelServiceImpl implements TravelService {
                 (String) row[1],
                 (String) row[2],
                 row[3] != null ? ((Number) row[3]).longValue() : null,
-                row[4] != null ? ((Number) row[4]).longValue() : null
+                row[4] != null ? ((Number) row[4]).longValue() : null,
+                (String) row[5],
+                (String) row[6],
+                (String) row[7],
+                (Timestamp) row[8],
+                ((Number) row[9]).intValue()
             ))
             .collect(Collectors.toList());
 
