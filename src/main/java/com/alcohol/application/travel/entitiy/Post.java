@@ -38,13 +38,14 @@ public class Post {
 
     private String planName;
 
-    @ManyToMany
-    @JoinTable(
-        name = "post_files",
-        joinColumns = @JoinColumn(name = "post_id"),
-        inverseJoinColumns = @JoinColumn(name = "file_id")
-    )
-    private List<File> images = new ArrayList<>();
+    // @ManyToMany
+    // @JoinTable(
+    //     name = "post_files",
+    //     joinColumns = @JoinColumn(name = "post_id"),
+    //     inverseJoinColumns = @JoinColumn(name = "file_id")
+    // )
+    private transient List<File> images = new ArrayList<>();
+    // private List<File> images = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
