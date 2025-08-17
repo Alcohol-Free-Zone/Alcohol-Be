@@ -45,11 +45,9 @@ public class UserAccount {
     private LocalDateTime lastLoginAt;
 
     // 소셜 로그인 정보 업데이트
-    public UserAccount updateInfo(String nickname, String email, String profileImage) {
+    public UserAccount updateInfo(String nickname, String email) {
         this.nickname = nickname;
         this.email = email;
-        //이미지 변경은 일단 url로만 되게 설정 추후 이미지 등록후 경로 가질수있게 변경예정
-        this.profileImage = profileImage;
         return this;
     }
 

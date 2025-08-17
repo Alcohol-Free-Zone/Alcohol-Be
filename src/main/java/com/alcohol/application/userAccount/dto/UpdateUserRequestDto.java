@@ -8,5 +8,4 @@ import lombok.Setter;
 public class UpdateUserRequestDto {
     private String nickname;
     private String email;
-    private String profileImage;
 }
