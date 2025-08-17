@@ -118,6 +118,11 @@ public class TravelServiceImpl implements TravelService {
         // 1. 친구 목록 pet_id 배열 형태로 준비
         List<Long> petIds = petFollowRepository.findPetIdsByFollower_id(userId);
 
+        // 1.1 기본적인 나의 팻 아이디 세팅
+        List<Long> myPetIds = travelRepository.findPetIdsByMyPet_id(userId);
+
+        petIds.addAll(myPetIds);
+
         // 2. 쿼리 실행
         Page<Object[]> page = travelRepository.findAllByIsOpenOrFriendsPrivate(petIds, contentIds, userId, pageable);
 

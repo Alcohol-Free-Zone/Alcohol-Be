@@ -150,4 +150,7 @@ public interface TravelRepository extends JpaRepository<Post, Long>{
         """, nativeQuery = true)
     List<Object[]> findRecentPostsByContentIds(@Param("contentIds") List<String> contentIds);
 
+    @Query("SELECT p.petId FROM Pet p WHERE p.userAccount.id = :userId")
+    List<Long> findPetIdsByMyPet_id(Long userId);
+
 }
