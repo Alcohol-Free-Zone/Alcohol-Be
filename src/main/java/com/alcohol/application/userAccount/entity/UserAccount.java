@@ -1,5 +1,6 @@
 package com.alcohol.application.userAccount.entity;
 
+import com.alcohol.common.files.entity.File;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,6 +26,10 @@ public class UserAccount {
     private String email;
     private String nickname;
     private String profileImage;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "file_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    private File profile;
 
     @Column(nullable = false)
     private Boolean isActive = true;
@@ -56,6 +61,12 @@ public class UserAccount {
     //마지막 로그인 시간 업데이트
     public UserAccount updateLastLoginAt() {
         this.lastLoginAt = LocalDateTime.now();
+        return this;
+    }
+
+    //업데이트 시간
+    public UserAccount updateAt() {
+        this.updatedAt = LocalDateTime.now();
         return this;
     }
 

@@ -53,6 +53,7 @@ public class UserAccountServiceImpl implements UserAccountService {
         UserAccount userAccount = authFindById(currentUser, targetUserId);
 
         userAccount.updateInfo(updateRequest.getNickname(), updateRequest.getEmail(), updateRequest.getProfileImage());
+        userAccount.updateAt();
 
         log.info("사용자 정보 업데이트: {}", targetUserId);
         return userAccountRepository.save(userAccount);
