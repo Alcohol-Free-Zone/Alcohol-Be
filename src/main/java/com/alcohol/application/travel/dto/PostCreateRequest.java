@@ -17,5 +17,6 @@ public class PostCreateRequest {
     private String isOpen;
     private String isPetYn;
     private Timestamp createdAt;
+    private String addr;
 
 }

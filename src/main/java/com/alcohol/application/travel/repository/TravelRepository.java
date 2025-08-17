@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import com.alcohol.application.travel.dto.AroundProjection;
-import com.alcohol.application.travel.dto.PetAllowResponse;
 import com.alcohol.application.travel.entitiy.Post;
 
 public interface TravelRepository extends JpaRepository<Post, Long>{
@@ -21,7 +20,11 @@ public interface TravelRepository extends JpaRepository<Post, Long>{
             MAX(p1.pet_name) AS petName,
             MAX(f.id) as postImage,
             MAX(f2.id) as petImage,
-            p.is_open AS isOpen
+            p.is_open AS isOpen,
+            p.addr,
+            MAX(ua.nickname) AS nickName,
+            p.created_at AS createdAt,
+            p.rating
         FROM post p
         LEFT JOIN post_pets pp 
             ON pp.post_id = p.post_id AND pp.pet_id in (:petIds) 
@@ -30,9 +33,11 @@ public interface TravelRepository extends JpaRepository<Post, Long>{
         LEFT JOIN post_files pf 
             ON pf.post_id = p.post_id
         LEFT JOIN file f
-            ON f.related_id = pf.file_id and f.file_type = 'POST_IMAGE'
+            ON f.id = pf.file_id and f.file_type = 'POST_IMAGE'
         LEFT JOIN file f2
-        	ON f2.related_id = pp.pet_id and f2.file_type = 'PET_PROFILE'
+        	ON f2.id = pp.pet_id and f2.file_type = 'PET_PROFILE'
+        LEFT JOIN user_account ua
+            ON ua.id = p.user_id
         WHERE (p.is_open = 'A' AND p.is_delete = 'N' AND p.content_id IN ('A005'))
             OR (pp.pet_id in (:petIds) AND p.is_open = 'F' AND p.is_delete = 'N')
             OR (p.user_id = :userId AND p.is_open = 'M' AND p.is_delete = 'N')
@@ -64,7 +69,7 @@ public interface TravelRepository extends JpaRepository<Post, Long>{
             ua.nickname
         FROM post p
         left join post_files pf on pf.post_id = p.post_id
-        left join file f on f.related_id = pf.post_id
+        left join file f on f.id = pf.post_id
 		left join user_account ua on ua.id = p.user_id      
 		where 1=1
 		and p.post_id = :postId
