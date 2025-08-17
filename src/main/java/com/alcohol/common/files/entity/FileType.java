@@ -1,12 +1,10 @@
 package com.alcohol.common.files.entity;
 
 public enum FileType {
-    PROFILE("프로필 이미지"),
-    PET_ALBUM("펫 앨범"),
-    PET_PROFILE("펫 프로필 이미지"),
-    POST_IMAGE("게시물 이미지"),
-    DOCUMENT("문서"), 
-    CUSTOM_ALBUM("커스텀 앨범");
+    IMAGE("이미지"),
+    DOCUMENT("문서"),
+    VIDEO("동영상"),
+    AUDIO("오디오");
 
     private final String description;
 

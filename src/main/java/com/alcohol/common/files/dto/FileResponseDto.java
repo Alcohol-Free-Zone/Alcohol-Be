@@ -18,7 +18,6 @@ public class FileResponseDto {
     private Long fileSize;
     private String contentType;
     private FileType fileType;
-    private Long relatedId;
 
     public static FileResponseDto from(File file) {
         return FileResponseDto.builder()
@@ -28,7 +27,6 @@ public class FileResponseDto {
                 .fileSize(file.getFileSize())
                 .contentType(file.getContentType())
                 .fileType(file.getFileType())
-                .relatedId(file.getRelatedId())
                 .build();
     }
 }

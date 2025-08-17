@@ -3,16 +3,23 @@ package com.alcohol.common.files.repository;
 import com.alcohol.common.files.entity.File;
 import com.alcohol.common.files.entity.FileType;
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.List;
+import java.util.Optional;
 
 public interface FileRepository extends JpaRepository<File, Long> {
+// ============ 사용자별 파일 관리 ============
 
-    // 특정 사용자의 프로필 이미지 조회
-    List<File> findByFileTypeAndRelatedId(FileType fileType, Long relatedId);
+    // ✅ 사용자의 모든 파일 조회 (최신순)
+    List<File> findByUserIdOrderByCreatedAtDesc(Long userId);
 
-    // 특정 펫의 앨범 이미지들 조회
-    List<File> findByFileTypeAndRelatedIdOrderByCreatedAtDesc(FileType fileType, Long relatedId);
+    // ✅ 사용자의 파일 타입별 조회 (최신순)
+    List<File> findByUserIdAndFileTypeOrderByCreatedAtDesc(Long userId, FileType fileType);
 
-    // 파일 타입별 조회
-    List<File> findByFileType(FileType fileType);
+    // ✅ 사용자의 파일 타입별 조회 (정렬 없음)
+    List<File> findByUserIdAndFileType(Long userId, FileType fileType);
+
+    // ✅ 파일 소유권 확인
+    Optional<File> findByIdAndUserId(Long fileId, Long userId);
+
 }

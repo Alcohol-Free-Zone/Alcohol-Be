@@ -48,12 +48,12 @@ public class FileServiceImpl implements FileService {
     private String filePath;           // /others
 
     @Override
-    public FileResponseDto uploadFile(MultipartFile file, FileType fileType, Long relatedId) {
+    public FileResponseDto uploadFile(MultipartFile file, Long userId, FileType fileType) {
         validateFile(file);
 
         try {
-            // 의미있는 파일명 생성 (FileType별로 구분)
-            String storedFileName = generateMeaningfulFileName(file.getOriginalFilename(), fileType, relatedId);
+            // 사용자 기반 파일명 생성
+            String storedFileName = generateUserBasedFileName(file.getOriginalFilename(), userId, fileType);
 
             // 단순한 구조: images 또는 others 폴더에 바로 저장
             String subPath = isImageFile(file.getContentType()) ? imagePath : filePath;
@@ -64,23 +64,28 @@ public class FileServiceImpl implements FileService {
             Path saveFilePath = Paths.get(fullPath, storedFileName);
             Files.copy(file.getInputStream(), saveFilePath);
 
-            String urlPath = subPath.equals(imagePath) ? "/images" : "/others";
-            String fileUrl = "/api/files" + urlPath + "/" + storedFileName;
 
-            // 기존 FileType과 relatedId 그대로 저장
+            // 사용자 소유 파일로 저장
             File fileEntity = File.builder()
                     .originalFileName(file.getOriginalFilename())
                     .storedFileName(storedFileName)
                     .filePath(saveFilePath.toString())
-                    .fileUrl(fileUrl)
+                    .fileUrl("")
                     .fileSize(file.getSize())
                     .contentType(file.getContentType())
-                    .fileType(fileType) // 원래 FileType 사용
-                    .relatedId(relatedId) // relatedId도 저장
+                    .fileType(fileType)
+                    .userId(userId) // 사용자 ID로 소유권 관리
                     .build();
 
             File saved = fileRepository.save(fileEntity);
-            log.info("파일 업로드 완료: {} -> {}", file.getOriginalFilename(), fullPath);
+
+            // ✅ ID 기반 URL 생성
+            String fileUrl = "/api/files/preview/" + saved.getId();
+            saved.setFileUrl(fileUrl);
+            saved = fileRepository.save(saved);
+
+            log.info("사용자 파일 업로드 완료: userId={}, fileId={}, fileName={}",
+                    userId, saved.getId(), file.getOriginalFilename());
 
             return FileResponseDto.from(saved);
 
@@ -93,17 +98,22 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public FileResponseDto uploadProfileImageAndUpdate(MultipartFile file, Long userId) {
-        // 기존 프로필 이미지 삭제
-        deleteFilesByTypeAndRelatedId(FileType.PROFILE, userId);
+        // 기존 프로필 이미지 삭제 (사용자 소유 파일 중에서)
+        deleteUserProfileImages(userId);
 
         // 새 프로필 이미지 업로드
-        FileResponseDto uploadedFile = uploadFile(file, FileType.PROFILE, userId);
+        FileResponseDto uploadedFile = uploadFile(file, userId, FileType.IMAGE);
 
         // UserAccount의 profileImage 필드 업데이트
         UserAccount user = userAccountRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        user.setProfileImage(uploadedFile.getFileUrl()); // 새 파일 URL로 업데이트
+        // ✅ File 엔터티 조회
+        File fileEntity = fileRepository.findById(uploadedFile.getId())
+                .orElseThrow(() -> new RuntimeException("업로드된 파일을 찾을 수 없습니다."));
+
+        user.setProfile(fileEntity);
+        user.updateAt();
         userAccountRepository.save(user);
 
         log.info("프로필 이미지 업데이트 완료: userId={}, fileUrl={}", userId, uploadedFile.getFileUrl());
@@ -111,39 +121,54 @@ public class FileServiceImpl implements FileService {
         return uploadedFile;
     }
 
-    // 의미있는 파일명 생성 (FileType별로 구분)
-    private String generateMeaningfulFileName(String originalFilename, FileType fileType, Long relatedId) {
+    // 사용자 기반 파일명 생성
+    private String generateUserBasedFileName(String originalFilename, Long userId, FileType fileType) {
         String extension = "";
         if (originalFilename != null && originalFilename.contains(".")) {
             extension = originalFilename.substring(originalFilename.lastIndexOf("."));
         }
 
         String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String time = String.valueOf(System.currentTimeMillis()).substring(8); // 뒷자리만
+        String time = String.valueOf(System.currentTimeMillis()).substring(8);
 
-        switch (fileType) {
-            case PROFILE:
-                return String.format("profile_user%d_%s_%s%s", relatedId, date, time, extension);
-            case PET_ALBUM:
-                return String.format("pet_album_pet%d_%s_%s%s", relatedId, date, time, extension);
-            case CUSTOM_ALBUM:
-                return String.format("custom_album_alb%d_%s_%s%s", relatedId, date, time, extension);
-            default:
-                return String.format("%s_%d_%s_%s%s", fileType.name().toLowerCase(), relatedId, date, time, extension);
+        return String.format("user_%d_%s_%s_%s%s",
+                userId, fileType.name().toLowerCase(), date, time, extension);
+    }
+
+    // 사용자의 프로필 이미지들 삭제
+    private void deleteUserProfileImages(Long userId) {
+        // UserAccount에서 현재 profile 확인
+        UserAccount user = userAccountRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 기존 프로필 파일이 있으면 삭제
+        if (user.getProfile()!= null) {
+            deleteFile(user.getProfile().getId());
         }
     }
 
-    @Override
-    public List<FileResponseDto> uploadMultipleFiles(List<MultipartFile> files, FileType fileType, Long relatedId) {
-        return files.stream()
-                .map(file -> uploadFile(file, fileType, relatedId))
-                .collect(Collectors.toList());
+    // 외부 URL인지 확인
+    private boolean isExternalUrl(String url) {
+        return url != null && (url.startsWith("http://") || url.startsWith("https://"));
     }
 
     @Override
+    public List<FileResponseDto> uploadMultipleFiles(List<MultipartFile> files, Long userId, FileType fileType) {
+        return files.stream()
+                .map(file -> uploadFile(file, userId, fileType))
+                .collect(Collectors.toList());
+    }
+
+    // ✅ 사용자의 파일들 조회
+    @Override
     @Transactional(readOnly = true)
-    public List<FileResponseDto> getFilesByTypeAndRelatedId(FileType fileType, Long relatedId) {
-        List<File> files = fileRepository.findByFileTypeAndRelatedIdOrderByCreatedAtDesc(fileType, relatedId);
+    public List<FileResponseDto> getUserFiles(Long userId, FileType fileType) {
+        List<File> files;
+        if (fileType != null) {
+            files = fileRepository.findByUserIdAndFileTypeOrderByCreatedAtDesc(userId, fileType);
+        } else {
+            files = fileRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        }
         return files.stream()
                 .map(FileResponseDto::from)
                 .collect(Collectors.toList());
@@ -174,10 +199,30 @@ public class FileServiceImpl implements FileService {
         log.info("파일 삭제 완료: {}", file.getOriginalFileName());
     }
 
+    // ✅ 사용자의 특정 타입 파일들 삭제
     @Override
-    public void deleteFilesByTypeAndRelatedId(FileType fileType, Long relatedId) {
-        List<File> files = fileRepository.findByFileTypeAndRelatedId(fileType, relatedId);
+    public void deleteUserFilesByType(Long userId, FileType fileType) {
+        List<File> files = fileRepository.findByUserIdAndFileType(userId, fileType);
         files.forEach(file -> deleteFile(file.getId()));
+
+        log.info("사용자 파일 타입별 삭제: userId={}, fileType={}, count={}",
+                userId, fileType, files.size());
+    }
+
+    // ✅ 사용자의 모든 파일 조회
+    @Override
+    @Transactional(readOnly = true)
+    public List<FileResponseDto> getUserAllFiles(Long userId) {
+        return getUserFiles(userId, null);
+    }
+
+    // ✅ 파일 소유권 확인 후 삭제
+    @Override
+    public void deleteFileWithPermission(Long fileId, Long userId) {
+        File file = fileRepository.findByIdAndUserId(fileId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("본인의 파일이 아니거나 파일을 찾을 수 없습니다."));
+
+        deleteFile(fileId);
     }
 
     @Override
@@ -185,6 +230,16 @@ public class FileServiceImpl implements FileService {
     public byte[] downloadFile(Long fileId) {
         File file = fileRepository.findById(fileId)
                 .orElseThrow(() -> new IllegalArgumentException("파일을 찾을 수 없습니다."));
+
+        return downloadFileByPath(file.getFilePath());
+    }
+
+    // ✅ 파일 소유권 확인 후 다운로드
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] downloadFileWithPermission(Long fileId, Long userId) {
+        File file = fileRepository.findByIdAndUserId(fileId, userId)
+                .orElseThrow(() -> new IllegalArgumentException("본인의 파일이 아니거나 파일을 찾을 수 없습니다."));
 
         return downloadFileByPath(file.getFilePath());
     }
@@ -235,62 +290,34 @@ public class FileServiceImpl implements FileService {
 
     // ✅ 추가: 이미지 파일인지 확인하는 메서드
     private boolean isImageFile(String contentType) {
-        return contentType != null && contentType.startsWith("image/");
-    }
-
-
-    // 이미지 파일 서빙 (Controller에서 이동)
-    @Override
-    public ResponseEntity<Resource> serveImageFile(String fileName) {
-        try {
-            Path filePath = Paths.get(filePrefix + imagePath, fileName);
-            Resource resource = new UrlResource(filePath.toUri());
-
-            if (resource.exists() && resource.isReadable()) {
-                return ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType(getContentType(fileName)))
-                        .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (MalformedURLException e) {
-            log.error("이미지 파일 서빙 실패: {}", fileName, e);
-            return ResponseEntity.badRequest().build();
+        if (contentType == null) {
+            return false;
         }
+
+        // 로그로 확인
+        log.debug("Content-Type 확인: {}", contentType);
+
+        return contentType.startsWith("image/") ||
+                contentType.equals("application/octet-stream"); // 일부 브라우저에서 이미지를 이렇게 보냄
     }
 
-    // 기타 파일 서빙 (Controller에서 이동)
-    @Override
-    public ResponseEntity<Resource> serveOtherFile(String fileName) {
-        try {
-            Path filePath = Paths.get(filePrefix + this.filePath, fileName);
-            Resource resource = new UrlResource(filePath.toUri());
-
-            if (resource.exists() && resource.isReadable()) {
-                return ResponseEntity.ok()
-                        .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                        .header(HttpHeaders.CONTENT_DISPOSITION,
-                                "attachment; filename=\"" + fileName + "\"")
-                        .body(resource);
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-        } catch (MalformedURLException e) {
-            log.error("기타 파일 서빙 실패: {}", fileName, e);
-            return ResponseEntity.badRequest().build();
+    // 또는 파일 확장자도 함께 확인
+    private boolean isImageFile(String contentType, String fileName) {
+        // Content-Type 확인
+        if (contentType != null && contentType.startsWith("image/")) {
+            return true;
         }
+
+        // 확장자 확인 (fallback)
+        if (fileName != null) {
+            String extension = fileName.toLowerCase();
+            return extension.endsWith(".jpg") || extension.endsWith(".jpeg") ||
+                    extension.endsWith(".png") || extension.endsWith(".gif") ||
+                    extension.endsWith(".webp") || extension.endsWith(".jfif");
+        }
+
+        return false;
     }
 
-    // 컨텐트 타입 결정 (Controller에서 이동)
-    private String getContentType(String fileName) {
-        String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
-        switch (extension) {
-            case "jpg":
-            case "jpeg": return "image/jpeg";
-            case "png": return "image/png";
-            case "gif": return "image/gif";
-            case "webp": return "image/webp";
-            default: return "application/octet-stream";
-        }
-    }
+
 }

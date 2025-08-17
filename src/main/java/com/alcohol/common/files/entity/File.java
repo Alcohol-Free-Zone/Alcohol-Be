@@ -39,14 +39,24 @@ public class File {
     @Column(nullable = false)
     private FileType fileType;        // 파일 용도 (PROFILE, PET_ALBUM)
 
-    @Column
-    private Long relatedId;           // 연관된 엔터티 ID (userId, petId 등)
+    // ✅ 사용자 정보 추가 (파일 소유자)
+    @Column(nullable = false)
+    private Long userId;
+
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+
+    private LocalDateTime updatedAt;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }
