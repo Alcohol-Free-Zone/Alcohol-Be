@@ -40,7 +40,7 @@ public interface TravelRepository extends JpaRepository<Post, Long>{
             ON ua.id = p.user_id
         WHERE (p.is_open = 'A' AND p.is_delete = 'N' AND p.content_id IN (:contentIds))
             OR (pp.pet_id in (:petIds) AND p.is_open = 'F' AND p.is_delete = 'N')
-            OR (p.user_id = :userId AND p.is_open = 'M' AND p.is_delete = 'N')
+            OR (p.user_id = :userId AND p.content_id IN (:contentIds) AND p.is_delete = 'N')
         GROUP BY p.post_id
         """,
         countQuery = """
