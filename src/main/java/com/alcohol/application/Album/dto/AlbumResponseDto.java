@@ -1,4 +1,4 @@
-package com.alcohol.application.petAlbum.dto;
+package com.alcohol.application.Album.dto;
 
 import com.alcohol.common.files.dto.FileResponseDto;
 import lombok.AllArgsConstructor;
@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PetAlbumResponseDto {
+public class AlbumResponseDto {
 
     private Long petId;
     private String petName;
