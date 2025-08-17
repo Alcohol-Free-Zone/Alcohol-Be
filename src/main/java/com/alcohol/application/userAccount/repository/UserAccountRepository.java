@@ -51,4 +51,9 @@ public interface UserAccountRepository extends JpaRepository<UserAccount, Long> 
     // 닉네임으로 검색 (부분 일치)
     @Query("SELECT u FROM UserAccount u WHERE u.nickname LIKE %:nickname% AND u.isActive = true")
     List<UserAccount> findByNicknameContaining(@Param("nickname") String nickname);
+
+    // ✅ 기본 findById를 오버라이드하여 profile 포함
+    @Override
+    @Query("SELECT u FROM UserAccount u LEFT JOIN FETCH u.profile WHERE u.id = :id")
+    Optional<UserAccount> findById(@Param("id") Long id);
 }

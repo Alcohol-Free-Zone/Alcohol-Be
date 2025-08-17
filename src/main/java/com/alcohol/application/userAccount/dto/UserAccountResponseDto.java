@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import com.alcohol.application.userAccount.entity.UserAccount;
 
+import com.alcohol.common.files.dto.FileResponseDto;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -16,6 +17,7 @@ public class UserAccountResponseDto {
     private String profileImage;
     private String provider;
     private String providerId;
+    private FileResponseDto profile;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -28,6 +30,7 @@ public class UserAccountResponseDto {
                 .profileImage(userAccount.getProfileImage())
                 .provider(userAccount.getProvider())
                 .providerId(userAccount.getProviderId())
+                .profile(userAccount.getProfileSafely())
                 .createdAt(userAccount.getCreatedAt())
                 .updatedAt(userAccount.getUpdatedAt())
                 .build();
