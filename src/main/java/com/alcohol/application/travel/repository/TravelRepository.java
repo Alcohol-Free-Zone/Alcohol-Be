@@ -38,7 +38,7 @@ public interface TravelRepository extends JpaRepository<Post, Long>{
         	ON f2.id = pp.pet_id and f2.file_type = 'PET_PROFILE'
         LEFT JOIN user_account ua
             ON ua.id = p.user_id
-        WHERE (p.is_open = 'A' AND p.is_delete = 'N' AND p.content_id IN ('A005'))
+        WHERE (p.is_open = 'A' AND p.is_delete = 'N' AND p.content_id IN (:contentIds))
             OR (pp.pet_id in (:petIds) AND p.is_open = 'F' AND p.is_delete = 'N')
             OR (p.user_id = :userId AND p.is_open = 'M' AND p.is_delete = 'N')
         GROUP BY p.post_id
