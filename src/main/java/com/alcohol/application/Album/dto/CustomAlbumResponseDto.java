@@ -1,6 +1,6 @@
-package com.alcohol.application.petAlbum.dto;
+package com.alcohol.application.Album.dto;
 
-import com.alcohol.application.petAlbum.entity.CustomAlbum;
+import com.alcohol.application.Album.entity.CustomAlbum;
 import com.alcohol.common.files.dto.FileResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

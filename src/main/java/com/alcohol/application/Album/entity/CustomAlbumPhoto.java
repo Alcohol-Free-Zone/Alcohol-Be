@@ -1,4 +1,4 @@
-package com.alcohol.application.petAlbum.entity;
+package com.alcohol.application.Album.entity;
 
 import com.alcohol.application.pet.entity.Pet;
 import com.alcohol.common.files.entity.File;
@@ -28,7 +28,7 @@ public class CustomAlbumPhoto {
     private Pet pet;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "file_id", nullable = false)
+    @JoinColumn(name = "file_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private File file;
 
     @Column(nullable = false)
@@ -36,12 +36,17 @@ public class CustomAlbumPhoto {
 
     @Column
     private String caption; // 사진별 캡션 (선택사항)
-
-    @Column(nullable = false)
-    private Integer displayOrder = 0; // 앨범 내 사진 순서
+    private Integer displayOrder;  // 앨범 내 사진 순서
 
     @PrePersist
     protected void onCreate() {
         addedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    private void validateFileExists() {
+        if (file == null || file.getId() == null) {
+            throw new IllegalStateException("파일이 존재해야 합니다.");
+        }
     }
 }

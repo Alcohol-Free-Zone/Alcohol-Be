@@ -1,4 +1,4 @@
-package com.alcohol.application.petAlbum.dto;
+package com.alcohol.application.Album.dto;
 
 import lombok.Getter;
 import lombok.Setter;

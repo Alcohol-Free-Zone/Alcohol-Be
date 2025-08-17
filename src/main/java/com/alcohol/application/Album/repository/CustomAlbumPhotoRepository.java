@@ -1,7 +1,7 @@
-package com.alcohol.application.petAlbum.repository;
+package com.alcohol.application.Album.repository;
 
-import com.alcohol.application.petAlbum.entity.CustomAlbumPhoto;
-import com.alcohol.application.petAlbum.entity.CustomAlbum;
+import com.alcohol.application.Album.entity.CustomAlbumPhoto;
+import com.alcohol.application.Album.entity.CustomAlbum;
 import com.alcohol.common.files.entity.File;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

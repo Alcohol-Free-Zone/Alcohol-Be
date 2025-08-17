@@ -1,4 +1,4 @@
-package com.alcohol.application.petAlbum.entity;
+package com.alcohol.application.Album.entity;
 
 import com.alcohol.application.userAccount.entity.UserAccount;
 import jakarta.persistence.*;
