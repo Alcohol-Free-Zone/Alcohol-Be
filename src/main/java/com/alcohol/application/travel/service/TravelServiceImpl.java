@@ -6,13 +6,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.alcohol.application.petFriend.repository.PetFriendRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.alcohol.application.pet.entity.Pet;
 import com.alcohol.application.pet.repository.PetRepository;
-import com.alcohol.application.petFollow.repository.PetFollowRepository;
 import com.alcohol.application.travel.dto.AroundListResponse;
 import com.alcohol.application.travel.dto.AroundProjection;
 import com.alcohol.application.travel.dto.FavoriteToggleResult;
@@ -41,7 +41,7 @@ public class TravelServiceImpl implements TravelService {
 
     private final TravelRepository travelRepository;
     private final FavoriteRepository favoriteRepository;
-    private final PetFollowRepository petFollowRepository;
+    private final PetFriendRepository petFriendRepository;
     private final FileRepository fileRepository;
     private final PetRepository petRepository;
 
@@ -116,7 +116,7 @@ public class TravelServiceImpl implements TravelService {
     public PageResponseDto<ReviewListResponse> getPosts(Long userId, Pageable pageable, List<String> contentIds) {
 
         // 1. 친구 목록 pet_id 배열 형태로 준비
-        List<Long> petIds = petFollowRepository.findPetIdsByFollower_id(userId);
+        List<Long> petIds = petFriendRepository.findFriendPetIdsOfUser(userId);
 
         // 1.1 기본적인 나의 팻 아이디 세팅
         List<Long> myPetIds = travelRepository.findPetIdsByMyPet_id(userId);
