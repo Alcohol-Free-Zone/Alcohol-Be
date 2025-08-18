@@ -90,7 +90,7 @@ public class PlanController {
     
     // 일정 비활성화
     @PatchMapping("/{id}")
-    public ResponseEntity<?> deactivatePlan(
+    public ResponseEntity<String> deactivatePlan(
         @PathVariable Long id,
         @AuthenticationPrincipal UserAccount currentUser
         ) {
