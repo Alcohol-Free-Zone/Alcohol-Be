@@ -1,14 +1,19 @@
 package com.alcohol.application.planInvite.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alcohol.application.planInvite.dto.PlanInviteRequest;
+import com.alcohol.application.planInvite.dto.PlanInviteResponse;
 import com.alcohol.application.planInvite.service.PlanInviteService;
 import com.alcohol.application.userAccount.entity.UserAccount;
 
@@ -35,9 +40,9 @@ public class PlanInviteController {
     }
 
     // 일정 상세조회
-    // @GetMapping("/{planId}")
-    // public ResponseEntity<PlanDetailDto> getPlanById(@PathVariable Long planId) {
-    //     PlanDetailDto planDetail = planService.getPlanDetailById(planId);
-    //     return ResponseEntity.ok(planDetail);
-    // }
+    @GetMapping("/plan-invite")
+    public ResponseEntity<List<PlanInviteResponse>> getPlans(@AuthenticationPrincipal UserAccount currentUser) {
+        List<PlanInviteResponse> invites = planInviteService.getPlanInvites(currentUser.getId());
+        return ResponseEntity.ok(invites);
+    }
 }
