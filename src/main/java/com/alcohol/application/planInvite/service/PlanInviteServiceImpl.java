@@ -10,6 +10,7 @@ import com.alcohol.application.pet.entity.Pet;
 import com.alcohol.application.pet.repository.PetRepository;
 import com.alcohol.application.planInvite.dto.PlanInviteRequest;
 import com.alcohol.application.planInvite.dto.PlanInviteResponse;
+import com.alcohol.application.planInvite.dto.PlanInviteStatusRequest;
 import com.alcohol.application.planInvite.entity.InviteStatus;
 import com.alcohol.application.planInvite.entity.PlanInvite;
 import com.alcohol.application.planInvite.repository.PlanInviteRepository;
@@ -57,10 +58,28 @@ public class PlanInviteServiceImpl implements PlanInviteService {
                         .status(invite.getStatus().name()) // Enum일 경우
                         .sendUserId(invite.getSendUser().getId())
                         .receiverPetId(invite.getReceiverPet().getPetId())
+                        .createdAt(invite.getCreatedAt())
                         .build()
                 )
                 .collect(Collectors.toList());
     }
 
-   
+    public void updateInviteStatus(PlanInviteStatusRequest request, Long userId) {
+        // receiverUser가 요청한 userId와 일치하는 PlanInvite 조회
+        PlanInvite invite = planInviteRepository.findByPlanInviteIdAndReceiverUser_Id(
+                            request.getPlanInviteId(), userId)
+                    .orElseThrow(() -> new IllegalArgumentException("권한이 없거나 존재하지 않는 초대입니다."));
+
+            // 이미 PENDING 상태가 아니면 권한 없음
+            if (invite.getStatus() != InviteStatus.PENDING) {
+                throw new IllegalArgumentException("이미 처리된 초대이거나 권한이 없습니다.");
+            }
+
+            // 상태 업데이트
+            invite.setStatus(request.getStatus());
+
+            // @PreUpdate에서 requestAt / rejectedAt 자동 처리
+            planInviteRepository.save(invite);
+        }
+ 
 }

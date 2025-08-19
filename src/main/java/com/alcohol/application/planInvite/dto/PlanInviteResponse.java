@@ -1,5 +1,7 @@
 package com.alcohol.application.planInvite.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -10,4 +12,5 @@ public class PlanInviteResponse {
     private String status;
     private Long sendUserId;
     private Long receiverPetId;
+    private LocalDateTime createdAt;
 }
