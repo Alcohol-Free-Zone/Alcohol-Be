@@ -50,16 +50,16 @@ public class PlanInviteServiceImpl implements PlanInviteService {
         // 특정 유저(userId)가 받은 초대 목록 조회
         List<PlanInvite> invites = planInviteRepository.findByReceiverUser_Id(userId);
 
+        // PlanInvite -> PlanInviteResponse 변환
         return invites.stream()
-        .map(invite -> {
-            return PlanInviteResponse.builder()
-                    .planInviteId(invite.getPlanInviteId())
-                    .status(invite.getStatus().name())
-                    .sendUserId(invite.getSendUser().getId())
-                    .receiverPetId(invite.getReceiverPet().getId())
-                    .build();
-        })
-        .collect(Collectors.toList());
+                .map(invite -> PlanInviteResponse.builder()
+                        .planInviteId(invite.getPlanInviteId())
+                        .status(invite.getStatus().name()) // Enum일 경우
+                        .sendUserId(invite.getSendUser().getId())
+                        .receiverPetId(invite.getReceiverPet().getPetId())
+                        .build()
+                )
+                .collect(Collectors.toList());
     }
 
    
