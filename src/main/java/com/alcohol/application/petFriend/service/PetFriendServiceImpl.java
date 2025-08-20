@@ -4,6 +4,7 @@ import com.alcohol.application.pet.dto.PetResponseDto;
 import com.alcohol.application.pet.entity.Pet;
 import com.alcohol.application.pet.repository.PetRepository;
 import com.alcohol.application.petFriend.dto.PetFriendResponseDto;
+import com.alcohol.application.petFriend.dto.PetFriendStatusResponse;
 import com.alcohol.application.petFriend.entity.FriendStatus;
 import com.alcohol.application.petFriend.entity.PetFriend;
 import com.alcohol.application.petFriend.repository.PetFriendRepository;
@@ -12,6 +13,7 @@ import com.alcohol.util.pagination.PageResponseDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -75,7 +77,6 @@ public class PetFriendServiceImpl implements PetFriendService {
             throw new IllegalStateException("이미 처리된 요청입니다.");
 
         pf.reject();
-        petFriendRepo.delete(pf); //거절직후 해당 친구 신청 삭제
     }
 
     /* ---------------------- 친구 끊기 ---------------------- */
@@ -95,10 +96,23 @@ public class PetFriendServiceImpl implements PetFriendService {
 
     /* ---------------------- 상태 확인 ---------------------- */
     @Override
-    public FriendStatus getFriendStatus(Long myPetId, Long targetPetId) {
+    public PetFriendStatusResponse getFriendStatus(Long myPetId, Long targetPetId) {
         return petFriendRepo.findRelationAnyStatus(myPetId, targetPetId)
-                .map(PetFriend::getStatus)
-                .orElse(null);   // null = 관계 없음
+                .map(pf -> {
+                    String msg;
+                    if (pf.getStatus() == FriendStatus.ACCEPTED)
+                        msg = "친구 상태입니다.";
+                    else if (pf.getStatus() == FriendStatus.PENDING)
+                        msg = "친구 신청 대기중입니다.";
+                    else if (pf.getStatus() == FriendStatus.REJECTED)
+                        msg = "친구 신청이 거절된 상태입니다.";
+                    else
+                        msg = "알 수 없는 상태입니다.";
+                    return new PetFriendStatusResponse(pf.getStatus(), msg);
+                })
+                .orElseGet(() ->
+                        new PetFriendStatusResponse(null, "친구가 아닙니다.")
+                );
     }
 
     /* ---------------------- 받은 요청 목록 ---------------------- */
@@ -149,19 +163,20 @@ public class PetFriendServiceImpl implements PetFriendService {
     @Override
     public PageResponseDto<PetResponseDto> petFriends(Long petId, Pageable pageable) {
 
-        var page = petFriendRepo.findFriendsOfPet(petId, pageable);
+        Page<Long> idPage = petFriendRepo.findFriendPetIds(petId, pageable);
 
-        List<PetResponseDto> dtoList = page.getContent()
-                .stream()
-                .map(PetResponseDto::from)
-                .toList();
+        List<PetResponseDto> dtoList =
+                petRepo.findAllById(idPage.getContent())   // 엔터티 재조회
+                        .stream()
+                        .map(PetResponseDto::from)
+                        .toList();
 
         return new PageResponseDto<>(
                 dtoList,
-                page.hasNext(),
-                page.getTotalElements(),
-                page.getNumber(),
-                page.getSize()
+                idPage.hasNext(),
+                idPage.getTotalElements(),
+                idPage.getNumber(),
+                idPage.getSize()
         );
     }
 }

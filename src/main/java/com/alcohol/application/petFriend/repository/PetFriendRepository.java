@@ -38,6 +38,17 @@ public interface PetFriendRepository extends JpaRepository<PetFriend, Long> {
            """)
     Page<Pet> findFriendsOfPet(Long petId, Pageable pageable);
 
+    @Query("""
+   SELECT CASE
+            WHEN pf.requesterPet.petId = :petId THEN pf.receiverPet.petId
+            ELSE pf.requesterPet.petId
+          END
+   FROM  PetFriend pf
+   WHERE (pf.requesterPet.petId = :petId OR pf.receiverPet.petId = :petId)
+     AND pf.status = 'ACCEPTED'
+""")
+    Page<Long> findFriendPetIds(Long petId, Pageable pageable);
+
     /* 친구 관계 레코드 하나 가져오기 (순서 무시) */
     @Query("""
            SELECT pf FROM PetFriend pf
