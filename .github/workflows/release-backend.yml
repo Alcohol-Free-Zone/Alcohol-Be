@@ -17,9 +17,8 @@ jobs:
           java-version: '21'
 
       - name: Build (Gradle bootJar)
-        working-directory: ./backend
         run: |
-          chmod +x gradlew
+          chmod +x ./gradlew
           ./gradlew clean bootJar
           cp build/libs/*.jar app.jar
 
@@ -27,7 +26,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app
-          path: backend/app.jar
+          path: app.jar
 
   deploy:
     runs-on: ubuntu-latest
