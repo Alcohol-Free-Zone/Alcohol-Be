@@ -3,6 +3,7 @@ package com.alcohol.config;
 import com.alcohol.config.filter.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -38,7 +39,7 @@ public class SecurityConfig {
             .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
             //  인증 및 권한 설정
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/**").permitAll() // 경로 전부 허용
+                .requestMatchers(HttpMethod.OPTIONS,"/**").permitAll() // 경로 전부 허용
                 .requestMatchers("/api/auth/**","/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated() 
             )
