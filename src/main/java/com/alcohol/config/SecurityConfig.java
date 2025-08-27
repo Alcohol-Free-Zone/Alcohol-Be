@@ -38,7 +38,7 @@ public class SecurityConfig {
             .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
             //  인증 및 권한 설정
             .authorizeHttpRequests(auth -> auth
-//                .requestMatchers("/**").permitAll() // 경로 전부 허용
+                .requestMatchers("/**").permitAll() // 경로 전부 허용
                 .requestMatchers("/api/auth/**","/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated() 
             )
