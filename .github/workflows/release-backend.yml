@@ -53,4 +53,4 @@ jobs:
         run: |
           APP_DIR="${{ secrets.APP_DIR }}"
           ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "bash '$APP_DIR/restart_backend.sh'"
+            "bash '$APP_DIR/scripts/restart_backend.sh'"
