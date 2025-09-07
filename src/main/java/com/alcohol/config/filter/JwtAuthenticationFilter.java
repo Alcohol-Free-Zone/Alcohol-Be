@@ -10,6 +10,7 @@ import com.alcohol.application.userAccount.repository.UserAccountRepository;
 import com.alcohol.application.userAccount.service.UserAccountService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.Cookie;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -127,6 +128,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
             return header.substring(7);
         }
+        // 쿠키에서 accessToken 확인 (새로 추가)
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("accessToken".equals(cookie.getName())) {
+                    log.debug("Found token in cookie: {}", cookie.getName());
+                    return cookie.getValue();
+                }
+            }
+        }
+
+        log.debug("No JWT token found in request");
         return null;
     }
 
