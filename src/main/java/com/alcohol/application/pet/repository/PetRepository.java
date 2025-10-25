@@ -29,4 +29,6 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
     //  펫 소유권 확인
     Optional<Pet> findByPetIdAndUserAccountId(Long petId, Long userId);
 
+    Page<Pet> findAllByPetIdIn(List<Long> petIds, Pageable pageable);
+
 }
